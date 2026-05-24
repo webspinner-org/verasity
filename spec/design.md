@@ -563,7 +563,7 @@ markdown subset documented in §4.7 of the functional spec. The full
 pipeline, in order:
 
 1. **Extract fenced code blocks** into a placeholder array
-   (` C{idx} `) so their contents are not processed by other
+   (`\u0000C{idx}\u0000`) so their contents are not processed by other
    rules. This protects the contents of code blocks from the inline
    rules that follow.
 2. **Escape all HTML** in the remaining text (`& < >`). This is the
@@ -595,7 +595,7 @@ may render imperfectly; that is acceptable.
 It interleaves three steps:
 
 1. **Extract `<spin>` and `<dispute>` blocks** into placeholders
-   (`T{idx}`) before HTML escaping. The two tag types and
+   (`\u0001T{idx}\u0001`) before HTML escaping. The two tag types and
    their inner content are captured by a single regex with a
    backreference.
 2. **Run the full `renderMarkdown` pipeline** on the surrounding text.
