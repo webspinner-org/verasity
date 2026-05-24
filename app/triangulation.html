@@ -1,0 +1,1580 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Triangulation v4.1 — Truth Be Told (Markdown)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=IBM+Plex+Serif:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0b0b0e;
+    --bg-elev: #14141a;
+    --bg-input: #1c1c24;
+    --bg-panel: #16161c;
+    --border: #2a2a35;
+    --border-bright: #3d3d4d;
+    --text: #d8d8e0;
+    --text-dim: #8a8a95;
+    --text-faint: #555560;
+    --accent: #d4a574;
+    --accent-bright: #f0c896;
+    --anthropic: #d68a5a;
+    --openai: #7bc99a;
+    --google: #7ba4d6;
+    --error: #d67a7a;
+    --success: #7bc99a;
+    --warn: #d4b96a;
+    --spin-bg: rgba(212, 185, 106, 0.16);
+    --spin-border: rgba(212, 185, 106, 0.55);
+    --dispute-bg: rgba(214, 122, 122, 0.16);
+    --dispute-border: rgba(214, 122, 122, 0.55);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'JetBrains Mono', ui-monospace, 'Cascadia Mono', Consolas, monospace;
+    font-size: 13px;
+    line-height: 1.6;
+    min-height: 100vh;
+    padding: 32px 24px;
+    background-image:
+      radial-gradient(ellipse at top left, rgba(212, 165, 116, 0.04), transparent 50%),
+      radial-gradient(ellipse at bottom right, rgba(123, 164, 214, 0.03), transparent 50%);
+    background-attachment: fixed;
+  }
+
+  .container { max-width: 1600px; margin: 0 auto; }
+
+  header {
+    display: flex; align-items: baseline; justify-content: space-between;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 16px; margin-bottom: 24px;
+  }
+  .brand {
+    font-family: 'IBM Plex Serif', Georgia, serif;
+    font-size: 22px; font-weight: 500; font-style: italic;
+    letter-spacing: 0.02em;
+  }
+  .brand-mark {
+    color: var(--accent); font-style: normal;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700; margin-right: 8px;
+  }
+  .meta {
+    color: var(--text-faint); font-size: 11px;
+    letter-spacing: 0.08em; text-transform: uppercase;
+  }
+
+  .settings {
+    background: var(--bg-panel); border: 1px solid var(--border);
+    border-radius: 4px; margin-bottom: 24px; overflow: hidden;
+  }
+  .settings-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 16px; cursor: pointer; user-select: none;
+    border-bottom: 1px solid transparent; transition: border-color 0.15s;
+  }
+  .settings.open .settings-header { border-bottom-color: var(--border); }
+  .settings-header:hover { background: rgba(255, 255, 255, 0.02); }
+  .settings-title {
+    font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--text-dim); font-weight: 500;
+  }
+  .settings-toggle { color: var(--text-faint); font-size: 11px; transition: transform 0.2s; }
+  .settings.open .settings-toggle { transform: rotate(90deg); }
+  .settings-body {
+    display: none; padding: 20px 16px; gap: 20px; grid-template-columns: repeat(3, 1fr);
+  }
+  .settings.open .settings-body { display: grid; }
+  @media (max-width: 900px) { .settings.open .settings-body { grid-template-columns: 1fr; } }
+  .config-group { display: flex; flex-direction: column; gap: 8px; }
+  .config-group-label {
+    font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--text-dim); margin-bottom: 4px; padding-bottom: 4px;
+    border-bottom: 1px dashed var(--border);
+  }
+  .config-group[data-provider="anthropic"] .config-group-label { color: var(--anthropic); }
+  .config-group[data-provider="openai"] .config-group-label { color: var(--openai); }
+  .config-group[data-provider="google"] .config-group-label { color: var(--google); }
+  label {
+    display: flex; flex-direction: column; gap: 4px;
+    font-size: 11px; color: var(--text-dim);
+  }
+  input[type="text"], input[type="password"] {
+    background: var(--bg-input); border: 1px solid var(--border); border-radius: 3px;
+    padding: 8px 10px; font-family: inherit; font-size: 12px; color: var(--text);
+    outline: none; transition: border-color 0.15s;
+  }
+  input[type="text"]:focus, input[type="password"]:focus, textarea:focus {
+    border-color: var(--accent);
+  }
+  .settings-actions {
+    grid-column: 1 / -1; display: flex; justify-content: flex-end; gap: 12px;
+    padding-top: 8px; border-top: 1px dashed var(--border);
+  }
+  .save-status {
+    font-size: 11px; color: var(--success); opacity: 0;
+    align-self: center; transition: opacity 0.2s;
+  }
+  .save-status.visible { opacity: 1; }
+
+  .prompt-section { margin-bottom: 24px; }
+  .prompt-label {
+    font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--text-dim); margin-bottom: 8px; display: block;
+  }
+  textarea {
+    width: 100%; background: var(--bg-input); border: 1px solid var(--border);
+    border-radius: 4px; padding: 14px 16px; font-family: inherit; font-size: 14px;
+    color: var(--text); outline: none; resize: vertical; min-height: 100px;
+    line-height: 1.6; transition: border-color 0.15s;
+  }
+  textarea::placeholder { color: var(--text-faint); }
+  .controls { display: flex; align-items: center; gap: 12px; margin-top: 12px; }
+
+  button {
+    background: var(--accent); color: var(--bg); border: none;
+    padding: 10px 24px; font-family: inherit; font-size: 12px;
+    font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+    cursor: pointer; border-radius: 3px;
+    transition: background 0.15s, transform 0.05s;
+  }
+  button:hover:not(:disabled) { background: var(--accent-bright); }
+  button:active:not(:disabled) { transform: translateY(1px); }
+  button:disabled { opacity: 0.4; cursor: not-allowed; }
+  button.secondary {
+    background: transparent; color: var(--text-dim); border: 1px solid var(--border);
+  }
+  button.secondary:hover:not(:disabled) {
+    color: var(--text); border-color: var(--border-bright); background: transparent;
+  }
+  .hint { font-size: 11px; color: var(--text-faint); margin-left: auto; }
+  kbd {
+    font-family: inherit; background: var(--bg-input); border: 1px solid var(--border);
+    border-radius: 2px; padding: 1px 6px; font-size: 10px; color: var(--text-dim);
+  }
+
+  .tabs {
+    display: flex; gap: 0;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 20px;
+  }
+  .tab-button {
+    background: transparent; color: var(--text-dim); border: none;
+    border-bottom: 2px solid transparent;
+    padding: 12px 20px; font-family: inherit; font-size: 11px; font-weight: 500;
+    letter-spacing: 0.12em; text-transform: uppercase; cursor: pointer;
+    transition: color 0.15s, border-color 0.15s;
+    border-radius: 0; margin-bottom: -1px;
+  }
+  .tab-button:hover:not(.active) { color: var(--text); background: transparent; }
+  .tab-button.active {
+    color: var(--accent); border-bottom-color: var(--accent); background: transparent;
+  }
+  .tab-button.truth-be-told.active {
+    color: var(--accent-bright);
+  }
+  .tab-pulse {
+    display: inline-block; margin-left: 8px;
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--accent); vertical-align: middle;
+    animation: pulse 1s ease-in-out infinite;
+  }
+  .tab-pulse.hidden { display: none; }
+
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  .responses {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;
+  }
+  @media (max-width: 1100px) { .responses { grid-template-columns: 1fr; } }
+
+  .panel {
+    background: var(--bg-panel); border: 1px solid var(--border); border-radius: 4px;
+    display: flex; flex-direction: column; min-height: 460px;
+    overflow: hidden; transition: border-color 0.15s;
+  }
+  .panel[data-provider="anthropic"] { border-top: 2px solid var(--anthropic); }
+  .panel[data-provider="openai"] { border-top: 2px solid var(--openai); }
+  .panel[data-provider="google"] { border-top: 2px solid var(--google); }
+  .panel-header { padding: 12px 16px; border-bottom: 1px solid var(--border); }
+  .panel-title {
+    font-family: 'IBM Plex Serif', Georgia, serif;
+    font-size: 15px; font-style: italic; font-weight: 500;
+  }
+  .panel[data-provider="anthropic"] .panel-title { color: var(--anthropic); }
+  .panel[data-provider="openai"]    .panel-title { color: var(--openai); }
+  .panel[data-provider="google"]    .panel-title { color: var(--google); }
+  .panel-model {
+    font-size: 10px; color: var(--text-faint);
+    letter-spacing: 0.05em; margin-top: 2px;
+  }
+
+  .veracity-band {
+    padding: 12px 16px;
+    background: rgba(0, 0, 0, 0.25);
+    border-bottom: 1px solid var(--border);
+  }
+  .veracity-label {
+    font-size: 9px; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--text-faint); margin-bottom: 8px;
+  }
+  .veracity-row { display: flex; gap: 8px; align-items: stretch; }
+  .verdict {
+    flex: 1; background: var(--bg-input); border: 1px solid var(--border);
+    border-radius: 3px; padding: 8px 10px;
+    display: flex; align-items: center; justify-content: space-between; gap: 8px;
+    transition: border-color 0.2s, background 0.2s;
+  }
+  .verdict-judge { font-size: 10px; color: var(--text-dim); letter-spacing: 0.04em; }
+  .verdict-score {
+    font-size: 22px; font-weight: 600;
+    font-variant-numeric: tabular-nums; line-height: 1;
+    color: var(--text-faint);
+  }
+  .verdict.pending .verdict-score {
+    color: var(--text-faint);
+    animation: pulse 1.2s ease-in-out infinite;
+  }
+  .verdict.scored.high   { border-color: var(--success); }
+  .verdict.scored.high   .verdict-score { color: var(--success); }
+  .verdict.scored.mid    { border-color: var(--warn); }
+  .verdict.scored.mid    .verdict-score { color: var(--warn); }
+  .verdict.scored.low    { border-color: var(--error); }
+  .verdict.scored.low    .verdict-score { color: var(--error); }
+  .verdict.failed        { border-color: var(--border); }
+  .verdict.failed .verdict-score { color: var(--text-faint); font-size: 16px; }
+  .verdict.empty         { border-color: var(--warn); background: rgba(212, 185, 106, 0.05); }
+  .verdict.empty .verdict-score { color: var(--warn); font-size: 13px; letter-spacing: 0.05em; }
+
+  .panel-status {
+    display: flex; align-items: center; gap: 8px; padding: 6px 16px;
+    font-size: 10px; color: var(--text-faint);
+    background: rgba(0, 0, 0, 0.15); border-bottom: 1px solid var(--border);
+    letter-spacing: 0.05em; text-transform: uppercase;
+  }
+  .status-dot {
+    width: 6px; height: 6px; border-radius: 50%; background: var(--text-faint);
+  }
+  .panel.loading .status-dot { background: var(--accent); animation: pulse 1s ease-in-out infinite; }
+  .panel.error .status-dot { background: var(--error); }
+  .panel.success .status-dot { background: var(--success); }
+  @keyframes pulse { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }
+  .timing { margin-left: auto; font-variant-numeric: tabular-nums; }
+
+  .panel-body {
+    flex: 1; padding: 16px; overflow-y: auto;
+    font-size: 13px; line-height: 1.65;
+    word-wrap: break-word;
+    max-height: 600px;
+  }
+  .panel-body.empty {
+    color: var(--text-faint); font-style: italic;
+    display: flex; align-items: center; justify-content: center; text-align: center;
+    white-space: pre-wrap;
+  }
+  .panel-body.error-text { color: var(--error); font-size: 12px; white-space: pre-wrap; }
+
+  .veracity-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;
+  }
+  @media (max-width: 1100px) { .veracity-grid { grid-template-columns: 1fr; } }
+
+  .subject-column {
+    background: var(--bg-panel); border: 1px solid var(--border); border-radius: 4px;
+    display: flex; flex-direction: column; overflow: hidden;
+  }
+  .subject-column[data-provider="anthropic"] { border-top: 2px solid var(--anthropic); }
+  .subject-column[data-provider="openai"]    { border-top: 2px solid var(--openai); }
+  .subject-column[data-provider="google"]    { border-top: 2px solid var(--google); }
+  .subject-header {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    background: rgba(0, 0, 0, 0.2);
+  }
+  .subject-label {
+    font-size: 9px; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--text-faint); margin-bottom: 4px;
+  }
+  .subject-title {
+    font-family: 'IBM Plex Serif', Georgia, serif;
+    font-size: 15px; font-style: italic; font-weight: 500;
+  }
+  .subject-column[data-provider="anthropic"] .subject-title { color: var(--anthropic); }
+  .subject-column[data-provider="openai"]    .subject-title { color: var(--openai); }
+  .subject-column[data-provider="google"]    .subject-title { color: var(--google); }
+  .subject-model { font-size: 10px; color: var(--text-faint); margin-top: 2px; }
+
+  .judge-block { border-bottom: 1px solid var(--border); padding: 14px 16px; }
+  .judge-block:last-child { border-bottom: none; }
+  .judge-block-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 10px; padding-bottom: 8px;
+    border-bottom: 1px dashed var(--border);
+  }
+  .judge-name { font-size: 11px; letter-spacing: 0.06em; color: var(--text-dim); }
+  .judge-name strong { color: var(--text); font-weight: 600; }
+  .judge-score-pill {
+    font-size: 18px; font-weight: 600; font-variant-numeric: tabular-nums;
+    padding: 2px 10px; border-radius: 3px; border: 1px solid var(--border);
+    background: var(--bg-input); color: var(--text-faint);
+    min-width: 56px; text-align: center;
+  }
+  .judge-score-pill.high { border-color: var(--success); color: var(--success); }
+  .judge-score-pill.mid  { border-color: var(--warn); color: var(--warn); }
+  .judge-score-pill.low  { border-color: var(--error); color: var(--error); }
+  .judge-score-pill.empty-state { border-color: var(--warn); color: var(--warn); font-size: 11px; letter-spacing: 0.05em; }
+  .judge-score-pill.pending {
+    color: var(--accent); border-color: var(--accent);
+    animation: pulse 1.2s ease-in-out infinite;
+  }
+  .explanation-box {
+    width: 100%; background: var(--bg-input); border: 1px solid var(--border);
+    border-radius: 3px; padding: 12px 14px;
+    font-family: inherit; font-size: 12px; line-height: 1.65; color: var(--text);
+    min-height: 140px; max-height: 320px; overflow-y: auto;
+    word-wrap: break-word; resize: vertical;
+  }
+  .explanation-box.empty {
+    color: var(--text-faint); font-style: italic;
+    display: flex; align-items: center; justify-content: center; text-align: center;
+    white-space: pre-wrap;
+  }
+  .explanation-box.error-text { color: var(--error); font-size: 11px; white-space: pre-wrap; }
+  .explanation-box.warn-text { color: var(--warn); font-size: 12px; white-space: pre-wrap; }
+
+  /* TRUTH BE TOLD TAB */
+  .synthesis-container {
+    background: var(--bg-panel);
+    border: 1px solid var(--border);
+    border-top: 2px solid var(--accent);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .synthesis-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+    background: rgba(0, 0, 0, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+  .synthesis-title-block {
+    display: flex; flex-direction: column; gap: 2px;
+  }
+  .synthesis-title {
+    font-family: 'IBM Plex Serif', Georgia, serif;
+    font-size: 20px;
+    font-style: italic;
+    font-weight: 500;
+    color: var(--accent);
+  }
+  .synthesis-subtitle {
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-faint);
+  }
+  .synthesis-status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 10px;
+    color: var(--text-faint);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .synthesis-status .status-dot {
+    width: 8px; height: 8px;
+  }
+  .synthesis-status.loading .status-dot { background: var(--accent); animation: pulse 1s ease-in-out infinite; }
+  .synthesis-status.success .status-dot { background: var(--success); }
+  .synthesis-status.error .status-dot { background: var(--error); }
+  .synthesis-status .timing { color: var(--text-faint); }
+
+  .synthesis-legend {
+    padding: 12px 20px;
+    background: rgba(0, 0, 0, 0.12);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 24px;
+    font-size: 11px;
+    color: var(--text-dim);
+  }
+  .legend-item { display: flex; align-items: center; gap: 8px; }
+  .legend-text-swatch {
+    font-family: 'IBM Plex Serif', Georgia, serif;
+    font-style: italic;
+    font-weight: 500;
+    font-size: 13px;
+  }
+  .legend-text-swatch.consensus { color: var(--text); }
+  .legend-text-swatch.spin-color { color: var(--warn); }
+  .legend-text-swatch.dispute-color { color: var(--error); }
+
+  .synthesis-meta {
+    padding: 10px 20px;
+    background: rgba(0, 0, 0, 0.08);
+    border-bottom: 1px solid var(--border);
+    font-size: 10px;
+    color: var(--text-faint);
+    letter-spacing: 0.05em;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+  }
+  .synthesis-meta strong { color: var(--text-dim); font-weight: 500; }
+
+  .synthesis-body {
+    padding: 24px 28px;
+    font-family: 'IBM Plex Serif', Georgia, serif;
+    font-size: 16px;
+    line-height: 1.75;
+    color: var(--text);
+    min-height: 200px;
+    word-wrap: break-word;
+  }
+  .synthesis-body.empty {
+    color: var(--text-faint);
+    font-style: italic;
+    text-align: center;
+    padding: 60px 28px;
+    font-size: 14px;
+    white-space: pre-wrap;
+  }
+  .synthesis-body.error-text {
+    color: var(--error);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    white-space: pre-wrap;
+  }
+
+  /* The inline annotations: TEXT colored, no background, no underline */
+  .synthesis-body .spin {
+    color: var(--warn);
+    font-weight: 500;
+    cursor: help;
+  }
+  .synthesis-body .dispute {
+    color: var(--error);
+    font-weight: 500;
+    cursor: help;
+  }
+
+  /* MARKDOWN RENDERING - applied via .md class */
+  .md h1, .md h2, .md h3, .md h4 {
+    font-family: inherit; font-weight: 600; line-height: 1.3;
+    margin-top: 0.9em; margin-bottom: 0.4em;
+  }
+  .md h1:first-child, .md h2:first-child, .md h3:first-child, .md h4:first-child { margin-top: 0; }
+  .md h1 { font-size: 1.3em; }
+  .md h2 { font-size: 1.18em; }
+  .md h3 { font-size: 1.08em; }
+  .md h4 { font-size: 1em; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.05em; }
+  .md p { margin: 0.55em 0; }
+  .md p:first-child { margin-top: 0; }
+  .md p:last-child { margin-bottom: 0; }
+  .md ul, .md ol { margin: 0.55em 0; padding-left: 1.6em; }
+  .md li { margin: 0.2em 0; }
+  .md strong { font-weight: 600; color: var(--text); }
+  .md em { font-style: italic; }
+  .md code {
+    background: rgba(255, 255, 255, 0.06);
+    padding: 1px 5px; border-radius: 2px;
+    font-family: 'JetBrains Mono', monospace; font-size: 0.92em;
+  }
+  .md pre {
+    background: rgba(0, 0, 0, 0.35); border: 1px solid var(--border);
+    padding: 10px 12px; border-radius: 3px;
+    overflow-x: auto; margin: 0.7em 0;
+    font-size: 0.92em; line-height: 1.55;
+  }
+  .md pre code { background: transparent; padding: 0; }
+  .md blockquote {
+    border-left: 3px solid var(--border-bright);
+    padding-left: 12px; margin: 0.7em 0;
+    color: var(--text-dim); font-style: italic;
+  }
+  .md hr { border: none; border-top: 1px solid var(--border); margin: 1em 0; }
+  .md a { color: var(--accent); }
+
+  /* Synthesis body uses serif for headings too */
+  .synthesis-body.md h1, .synthesis-body.md h2,
+  .synthesis-body.md h3, .synthesis-body.md h4 {
+    font-family: 'IBM Plex Serif', Georgia, serif;
+  }
+  .synthesis-body.md h1 { font-size: 1.5em; }
+  .synthesis-body.md h2 { font-size: 1.3em; }
+  .synthesis-body.md h3 { font-size: 1.15em; }
+  .synthesis-body.md p { margin: 0.7em 0; }
+  .synthesis-body.md ul, .synthesis-body.md ol { margin: 0.7em 0; }
+  .synthesis-body.md code { font-family: 'JetBrains Mono', monospace; font-size: 0.85em; }
+
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--border-bright); }
+
+  footer {
+    margin-top: 32px; padding-top: 16px; border-top: 1px solid var(--border);
+    font-size: 10px; color: var(--text-faint);
+    letter-spacing: 0.08em; text-transform: uppercase; text-align: center;
+  }
+
+  .warning {
+    background: rgba(214, 122, 122, 0.08);
+    border: 1px solid rgba(214, 122, 122, 0.2);
+    color: var(--error); padding: 10px 14px; border-radius: 3px;
+    font-size: 11px; margin-bottom: 20px; line-height: 1.5;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <div class="brand"><span class="brand-mark">◆</span>Triangulation</div>
+    <div class="meta">v4.1 — truth be told (markdown)</div>
+  </header>
+
+  <div class="warning">
+    Browser-side API keys are stored in localStorage only. Suitable for local experimentation; do not deploy this page to any public host.
+  </div>
+
+  <div class="settings" id="settings">
+    <div class="settings-header" onclick="document.getElementById('settings').classList.toggle('open')">
+      <span class="settings-title">Configuration</span>
+      <span class="settings-toggle">▸</span>
+    </div>
+    <div class="settings-body">
+      <div class="config-group" data-provider="anthropic">
+        <div class="config-group-label">Anthropic (also the synthesizer)</div>
+        <label>API Key<input type="password" id="anthropic-key" placeholder="sk-ant-..."></label>
+        <label>Model<input type="text" id="anthropic-model" value="claude-opus-4-7"></label>
+      </div>
+      <div class="config-group" data-provider="openai">
+        <div class="config-group-label">OpenAI</div>
+        <label>API Key<input type="password" id="openai-key" placeholder="sk-..."></label>
+        <label>Model<input type="text" id="openai-model" value="gpt-5"></label>
+      </div>
+      <div class="config-group" data-provider="google">
+        <div class="config-group-label">Google</div>
+        <label>API Key<input type="password" id="google-key" placeholder="AIza..."></label>
+        <label>Model<input type="text" id="google-model" value="gemini-2.5-flash"></label>
+      </div>
+      <div class="settings-actions">
+        <span class="save-status" id="save-status">Saved</span>
+        <button class="secondary" onclick="clearKeys()">Clear</button>
+        <button onclick="saveConfig()">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="prompt-section">
+    <label class="prompt-label">Prompt</label>
+    <textarea id="prompt" placeholder="Each model answers, then judges the other two, then Anthropic synthesizes a single annotated 'most truthful' answer in the Truth Be Told tab." rows="4"></textarea>
+    <div class="controls">
+      <button id="send-btn" onclick="sendPrompt()">Send, cross-judge & synthesize</button>
+      <button class="secondary" onclick="clearResponses()">Clear</button>
+      <span class="hint"><kbd>Ctrl</kbd>+<kbd>Enter</kbd> to send</span>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab-button active" data-tab="responses" onclick="showTab('responses')">Responses</button>
+    <button class="tab-button" data-tab="veracity" onclick="showTab('veracity')">Veracity Check</button>
+    <button class="tab-button truth-be-told" data-tab="truth" onclick="showTab('truth')">
+      Truth Be Told<span class="tab-pulse hidden" id="truth-pulse"></span>
+    </button>
+  </div>
+
+  <!-- TAB 1: RESPONSES -->
+  <div class="tab-panel active" data-tab="responses">
+    <div class="responses">
+
+      <div class="panel" data-provider="anthropic" id="panel-anthropic">
+        <div class="panel-header">
+          <div class="panel-title">Anthropic</div>
+          <div class="panel-model" id="label-anthropic">claude-opus-4-7</div>
+        </div>
+        <div class="veracity-band">
+          <div class="veracity-label">Veracity verdicts (other models judging this response)</div>
+          <div class="veracity-row">
+            <div class="verdict" data-judge="openai" id="verdict-anthropic-openai">
+              <span class="verdict-judge">OpenAI</span><span class="verdict-score">—</span>
+            </div>
+            <div class="verdict" data-judge="google" id="verdict-anthropic-google">
+              <span class="verdict-judge">Google</span><span class="verdict-score">—</span>
+            </div>
+          </div>
+        </div>
+        <div class="panel-status">
+          <div class="status-dot"></div>
+          <span class="status-text">Idle</span>
+          <span class="timing"></span>
+        </div>
+        <div class="panel-body empty">Awaiting prompt.</div>
+      </div>
+
+      <div class="panel" data-provider="openai" id="panel-openai">
+        <div class="panel-header">
+          <div class="panel-title">OpenAI</div>
+          <div class="panel-model" id="label-openai">gpt-5</div>
+        </div>
+        <div class="veracity-band">
+          <div class="veracity-label">Veracity verdicts (other models judging this response)</div>
+          <div class="veracity-row">
+            <div class="verdict" data-judge="anthropic" id="verdict-openai-anthropic">
+              <span class="verdict-judge">Anthropic</span><span class="verdict-score">—</span>
+            </div>
+            <div class="verdict" data-judge="google" id="verdict-openai-google">
+              <span class="verdict-judge">Google</span><span class="verdict-score">—</span>
+            </div>
+          </div>
+        </div>
+        <div class="panel-status">
+          <div class="status-dot"></div>
+          <span class="status-text">Idle</span>
+          <span class="timing"></span>
+        </div>
+        <div class="panel-body empty">Awaiting prompt.</div>
+      </div>
+
+      <div class="panel" data-provider="google" id="panel-google">
+        <div class="panel-header">
+          <div class="panel-title">Google</div>
+          <div class="panel-model" id="label-google">gemini-2.5-flash</div>
+        </div>
+        <div class="veracity-band">
+          <div class="veracity-label">Veracity verdicts (other models judging this response)</div>
+          <div class="veracity-row">
+            <div class="verdict" data-judge="anthropic" id="verdict-google-anthropic">
+              <span class="verdict-judge">Anthropic</span><span class="verdict-score">—</span>
+            </div>
+            <div class="verdict" data-judge="openai" id="verdict-google-openai">
+              <span class="verdict-judge">OpenAI</span><span class="verdict-score">—</span>
+            </div>
+          </div>
+        </div>
+        <div class="panel-status">
+          <div class="status-dot"></div>
+          <span class="status-text">Idle</span>
+          <span class="timing"></span>
+        </div>
+        <div class="panel-body empty">Awaiting prompt.</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- TAB 2: VERACITY CHECK -->
+  <div class="tab-panel" data-tab="veracity">
+    <div class="veracity-grid">
+
+      <div class="subject-column" data-provider="anthropic">
+        <div class="subject-header">
+          <div class="subject-label">Response being judged</div>
+          <div class="subject-title">Anthropic</div>
+          <div class="subject-model" id="subject-model-anthropic">claude-opus-4-7</div>
+        </div>
+        <div class="judge-block" data-judge="openai">
+          <div class="judge-block-header">
+            <div class="judge-name"><strong>OpenAI</strong> judges:</div>
+            <div class="judge-score-pill" id="pill-anthropic-openai">—</div>
+          </div>
+          <div class="explanation-box empty" id="explain-anthropic-openai">Awaiting judgment.</div>
+        </div>
+        <div class="judge-block" data-judge="google">
+          <div class="judge-block-header">
+            <div class="judge-name"><strong>Google</strong> judges:</div>
+            <div class="judge-score-pill" id="pill-anthropic-google">—</div>
+          </div>
+          <div class="explanation-box empty" id="explain-anthropic-google">Awaiting judgment.</div>
+        </div>
+      </div>
+
+      <div class="subject-column" data-provider="openai">
+        <div class="subject-header">
+          <div class="subject-label">Response being judged</div>
+          <div class="subject-title">OpenAI</div>
+          <div class="subject-model" id="subject-model-openai">gpt-5</div>
+        </div>
+        <div class="judge-block" data-judge="anthropic">
+          <div class="judge-block-header">
+            <div class="judge-name"><strong>Anthropic</strong> judges:</div>
+            <div class="judge-score-pill" id="pill-openai-anthropic">—</div>
+          </div>
+          <div class="explanation-box empty" id="explain-openai-anthropic">Awaiting judgment.</div>
+        </div>
+        <div class="judge-block" data-judge="google">
+          <div class="judge-block-header">
+            <div class="judge-name"><strong>Google</strong> judges:</div>
+            <div class="judge-score-pill" id="pill-openai-google">—</div>
+          </div>
+          <div class="explanation-box empty" id="explain-openai-google">Awaiting judgment.</div>
+        </div>
+      </div>
+
+      <div class="subject-column" data-provider="google">
+        <div class="subject-header">
+          <div class="subject-label">Response being judged</div>
+          <div class="subject-title">Google</div>
+          <div class="subject-model" id="subject-model-google">gemini-2.5-flash</div>
+        </div>
+        <div class="judge-block" data-judge="anthropic">
+          <div class="judge-block-header">
+            <div class="judge-name"><strong>Anthropic</strong> judges:</div>
+            <div class="judge-score-pill" id="pill-google-anthropic">—</div>
+          </div>
+          <div class="explanation-box empty" id="explain-google-anthropic">Awaiting judgment.</div>
+        </div>
+        <div class="judge-block" data-judge="openai">
+          <div class="judge-block-header">
+            <div class="judge-name"><strong>OpenAI</strong> judges:</div>
+            <div class="judge-score-pill" id="pill-google-openai">—</div>
+          </div>
+          <div class="explanation-box empty" id="explain-google-openai">Awaiting judgment.</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- TAB 3: TRUTH BE TOLD -->
+  <div class="tab-panel" data-tab="truth">
+    <div class="synthesis-container">
+      <div class="synthesis-header">
+        <div class="synthesis-title-block">
+          <div class="synthesis-title">Truth Be Told</div>
+          <div class="synthesis-subtitle">Anthropic synthesizes a single annotated answer from all three responses + six evaluations</div>
+        </div>
+        <div class="synthesis-status" id="synthesis-status">
+          <div class="status-dot"></div>
+          <span class="status-text">Idle</span>
+          <span class="timing"></span>
+        </div>
+      </div>
+      <div class="synthesis-legend">
+        <span class="legend-item"><span class="legend-text-swatch consensus">Consensus claim</span></span>
+        <span class="legend-item"><span class="legend-text-swatch spin-color">Minor spin or imprecision</span></span>
+        <span class="legend-item"><span class="legend-text-swatch dispute-color">Disputed or contested</span></span>
+      </div>
+      <div class="synthesis-meta" id="synthesis-meta" style="display: none;">
+        <span><strong>Sources:</strong> <span id="meta-sources">—</span></span>
+        <span><strong>Evaluations:</strong> <span id="meta-evals">—</span></span>
+        <span><strong>Avg veracity:</strong> <span id="meta-avg">—</span></span>
+      </div>
+      <div class="synthesis-body empty" id="synthesis-body">Awaiting prompt. The synthesis runs automatically after all three responses and six cross-evaluations complete.</div>
+    </div>
+  </div>
+
+  <footer>three voices. six verdicts. one synthesized truth.</footer>
+</div>
+
+<script>
+  // ---------------- CONFIG ----------------
+  const STORAGE_KEY = 'triangulation_v4_1_config';
+  const LEGACY_KEYS = ['triangulation_v4_config', 'triangulation_v3_1_config', 'triangulation_v3_config', 'triangulation_v2_config', 'triangulation_v1_config'];
+  const PROVIDERS = ['anthropic', 'openai', 'google'];
+  const DISPLAY = { anthropic: 'Anthropic', openai: 'OpenAI', google: 'Google' };
+
+  const TOKEN_BUDGETS = {
+    anthropic: 4096,
+    openai:    16384,
+    google:    4096
+  };
+  const SYNTHESIS_MAX_TOKENS = 8192;
+
+  // Run state - reset on each send. Synthesis reads from here.
+  const runState = {
+    prompt: '',
+    responses: { anthropic: null, openai: null, google: null },
+    judgments: {} // key: `${source}-${judge}` -> { score, explanation }
+  };
+
+  function loadConfig() {
+    try {
+      let raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) {
+        for (const lk of LEGACY_KEYS) {
+          raw = localStorage.getItem(lk);
+          if (raw) break;
+        }
+      }
+      if (!raw) return;
+      const cfg = JSON.parse(raw);
+      if (cfg.anthropicKey) document.getElementById('anthropic-key').value = cfg.anthropicKey;
+      if (cfg.openaiKey)   document.getElementById('openai-key').value   = cfg.openaiKey;
+      if (cfg.googleKey)   document.getElementById('google-key').value   = cfg.googleKey;
+      if (cfg.anthropicModel) document.getElementById('anthropic-model').value = cfg.anthropicModel;
+      if (cfg.openaiModel)    document.getElementById('openai-model').value    = cfg.openaiModel;
+      if (cfg.googleModel)    document.getElementById('google-model').value    = cfg.googleModel;
+      updateModelLabels();
+    } catch (e) { console.warn('Config load failed', e); }
+  }
+
+  function saveConfig() {
+    const cfg = {
+      anthropicKey:   document.getElementById('anthropic-key').value.trim(),
+      openaiKey:      document.getElementById('openai-key').value.trim(),
+      googleKey:      document.getElementById('google-key').value.trim(),
+      anthropicModel: document.getElementById('anthropic-model').value.trim(),
+      openaiModel:    document.getElementById('openai-model').value.trim(),
+      googleModel:    document.getElementById('google-model').value.trim()
+    };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(cfg));
+    updateModelLabels();
+    const status = document.getElementById('save-status');
+    status.classList.add('visible');
+    setTimeout(() => status.classList.remove('visible'), 1500);
+  }
+
+  function clearKeys() {
+    if (!confirm('Clear all saved keys and models from this browser?')) return;
+    localStorage.removeItem(STORAGE_KEY);
+    document.getElementById('anthropic-key').value = '';
+    document.getElementById('openai-key').value = '';
+    document.getElementById('google-key').value = '';
+    document.getElementById('anthropic-model').value = 'claude-opus-4-7';
+    document.getElementById('openai-model').value = 'gpt-5';
+    document.getElementById('google-model').value = 'gemini-2.5-flash';
+    updateModelLabels();
+  }
+
+  function updateModelLabels() {
+    PROVIDERS.forEach(p => {
+      const v = document.getElementById(p + '-model').value.trim() || '—';
+      document.getElementById('label-' + p).textContent = v;
+      const subj = document.getElementById('subject-model-' + p);
+      if (subj) subj.textContent = v;
+    });
+  }
+
+  function getCfg() {
+    return {
+      anthropic: { key: document.getElementById('anthropic-key').value.trim(), model: document.getElementById('anthropic-model').value.trim() },
+      openai:    { key: document.getElementById('openai-key').value.trim(),    model: document.getElementById('openai-model').value.trim() },
+      google:    { key: document.getElementById('google-key').value.trim(),    model: document.getElementById('google-model').value.trim() }
+    };
+  }
+
+  function showTab(name) {
+    document.querySelectorAll('.tab-button').forEach(b => {
+      b.classList.toggle('active', b.dataset.tab === name);
+    });
+    document.querySelectorAll('.tab-panel').forEach(p => {
+      p.classList.toggle('active', p.dataset.tab === name);
+    });
+    if (name === 'truth') {
+      document.getElementById('truth-pulse').classList.add('hidden');
+    }
+  }
+
+  // ---------------- PANEL UI ----------------
+  function setPanel(id, state, text, ms) {
+    const panel = document.getElementById('panel-' + id);
+    panel.classList.remove('loading', 'error', 'success');
+    panel.classList.add(state);
+    const statusText = panel.querySelector('.status-text');
+    const timing = panel.querySelector('.timing');
+    const body = panel.querySelector('.panel-body');
+    body.classList.remove('empty', 'error-text', 'md');
+
+    if (state === 'loading') {
+      statusText.textContent = 'Querying...';
+      timing.textContent = '';
+      body.classList.add('empty');
+      body.textContent = '◆ awaiting response';
+    } else if (state === 'success') {
+      statusText.textContent = 'Complete';
+      timing.textContent = ms != null ? (ms / 1000).toFixed(2) + 's' : '';
+      body.classList.add('md');
+      body.innerHTML = renderMarkdown(text);
+    } else if (state === 'error') {
+      statusText.textContent = 'Error';
+      timing.textContent = ms != null ? (ms / 1000).toFixed(2) + 's' : '';
+      body.classList.add('error-text');
+      body.textContent = text;
+    }
+  }
+
+  function scoreClass(n) {
+    if (n >= 70) return 'high';
+    if (n >= 40) return 'mid';
+    return 'low';
+  }
+
+  function setVerdict(source, judge, state, payload) {
+    const badge = document.getElementById(`verdict-${source}-${judge}`);
+    const pill  = document.getElementById(`pill-${source}-${judge}`);
+    const exp   = document.getElementById(`explain-${source}-${judge}`);
+    if (!badge || !pill || !exp) return;
+
+    badge.classList.remove('pending', 'scored', 'high', 'mid', 'low', 'failed', 'empty');
+    pill.classList.remove('pending', 'high', 'mid', 'low', 'empty-state');
+    exp.classList.remove('empty', 'error-text', 'warn-text', 'md');
+    badge.title = '';
+
+    const badgeScore = badge.querySelector('.verdict-score');
+
+    if (state === 'pending') {
+      badge.classList.add('pending');
+      badgeScore.textContent = '…';
+      pill.classList.add('pending');
+      pill.textContent = '…';
+      exp.classList.add('empty');
+      exp.textContent = 'Judge is deliberating...';
+    } else if (state === 'scored') {
+      const n = payload.score;
+      const cls = scoreClass(n);
+      badge.classList.add('scored', cls);
+      badgeScore.textContent = String(n);
+      badge.title = `${DISPLAY[judge]} rated ${DISPLAY[source]}'s response ${n}/100`;
+      pill.classList.add(cls);
+      pill.textContent = String(n);
+      const explanation = payload.explanation && payload.explanation.trim().length > 0
+        ? payload.explanation : '(no explanation returned)';
+      exp.classList.add('md');
+      exp.innerHTML = renderMarkdown(explanation);
+      runState.judgments[`${source}-${judge}`] = { score: n, explanation: payload.explanation || '' };
+    } else if (state === 'empty') {
+      badge.classList.add('empty');
+      badgeScore.textContent = 'EMPTY';
+      badge.title = payload && payload.reason ? `Empty response from judge: ${payload.reason}` : 'Judge returned empty response';
+      pill.classList.add('empty-state');
+      pill.textContent = 'EMPTY';
+      exp.classList.add('warn-text');
+      exp.textContent = `Judge returned an empty response.\n\n${payload && payload.reason ? payload.reason : ''}\n\nFor OpenAI reasoning models (GPT-5, o-series): this usually means the model exhausted its token budget on internal reasoning before producing visible output. Increasing the OpenAI token budget often fixes it.`;
+    } else if (state === 'unparseable') {
+      badge.classList.add('failed');
+      badgeScore.textContent = '?';
+      badge.title = 'Judge returned text but no extractable score';
+      pill.textContent = '?';
+      exp.classList.add('warn-text');
+      exp.textContent = `Judge returned text but no parseable 0-100 score was found.\n\nRaw reply:\n\n${payload && payload.raw ? payload.raw : '(no raw text captured)'}`;
+    } else if (state === 'errored') {
+      badge.classList.add('failed');
+      badgeScore.textContent = '—';
+      badge.title = payload && payload.reason ? `Judge errored: ${payload.reason}` : 'Judge errored';
+      pill.textContent = '—';
+      exp.classList.add('error-text');
+      exp.textContent = payload && payload.reason ? `Judge errored:\n\n${payload.reason}` : 'Judge errored.';
+    } else if (state === 'reset') {
+      badgeScore.textContent = '—';
+      pill.textContent = '—';
+      exp.classList.add('empty');
+      exp.textContent = 'Awaiting judgment.';
+    }
+  }
+
+  // ---------------- SYNTHESIS UI ----------------
+  function setSynthesisStatus(state, text, ms) {
+    const wrap = document.getElementById('synthesis-status');
+    wrap.classList.remove('loading', 'success', 'error');
+    if (state) wrap.classList.add(state);
+    wrap.querySelector('.status-text').textContent = text || '';
+    wrap.querySelector('.timing').textContent = ms != null ? (ms / 1000).toFixed(2) + 's' : '';
+  }
+
+  function setSynthesisMeta(stats) {
+    const meta = document.getElementById('synthesis-meta');
+    if (!stats) {
+      meta.style.display = 'none';
+      return;
+    }
+    meta.style.display = 'flex';
+    document.getElementById('meta-sources').textContent = stats.sources;
+    document.getElementById('meta-evals').textContent = stats.evals;
+    document.getElementById('meta-avg').textContent = stats.avg != null ? `${stats.avg.toFixed(1)}/100` : 'n/a';
+  }
+
+  // ---------------- MARKDOWN RENDERING ----------------
+  // Simple inline markdown parser. No CDN dependency. Handles the subset
+  // that LLMs typically emit: headers, bold, italic, code, lists, blockquotes,
+  // links, hr, paragraphs, line breaks.
+  function escapeHTML(s) {
+    return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
+  function renderMarkdown(text) {
+    if (!text) return '';
+    let src = String(text);
+
+    // Pull code blocks out first so their contents aren't touched by other rules
+    const codeBlocks = [];
+    src = src.replace(/```([a-zA-Z0-9_-]*)\n?([\s\S]*?)```/g, (m, lang, code) => {
+      const idx = codeBlocks.length;
+      codeBlocks.push(code.replace(/\n+$/, ''));
+      return `\u0000C${idx}\u0000`;
+    });
+
+    // Escape all HTML in the remaining text
+    src = escapeHTML(src);
+
+    // Inline code
+    src = src.replace(/`([^`\n]+)`/g, '<code>$1</code>');
+
+    // Headers
+    src = src.replace(/^####\s+(.+)$/gm, '<h4>$1</h4>');
+    src = src.replace(/^###\s+(.+)$/gm, '<h3>$1</h3>');
+    src = src.replace(/^##\s+(.+)$/gm, '<h2>$1</h2>');
+    src = src.replace(/^#\s+(.+)$/gm, '<h1>$1</h1>');
+
+    // Horizontal rule
+    src = src.replace(/^[\-\*_]{3,}$/gm, '<hr>');
+
+    // Bold and italic (bold first to avoid italic eating bold's stars)
+    src = src.replace(/\*\*([^\*\n]+)\*\*/g, '<strong>$1</strong>');
+    src = src.replace(/(^|[^\*])\*([^\*\n]+)\*/g, '$1<em>$2</em>');
+    src = src.replace(/__([^_\n]+)__/g, '<strong>$1</strong>');
+
+    // Links [text](url)
+    src = src.replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+
+    // Lists - line-based pass
+    const lines = src.split('\n');
+    const out = [];
+    let inUl = false, inOl = false, inBq = false;
+    function closeLists() {
+      if (inUl) { out.push('</ul>'); inUl = false; }
+      if (inOl) { out.push('</ol>'); inOl = false; }
+    }
+    function closeBq() {
+      if (inBq) { out.push('</blockquote>'); inBq = false; }
+    }
+    for (const line of lines) {
+      const ulM = line.match(/^\s*[\-\*\+]\s+(.+)$/);
+      const olM = line.match(/^\s*\d+\.\s+(.+)$/);
+      const bqM = line.match(/^&gt;\s?(.*)$/);
+      if (ulM) {
+        closeBq();
+        if (inOl) { out.push('</ol>'); inOl = false; }
+        if (!inUl) { out.push('<ul>'); inUl = true; }
+        out.push('<li>' + ulM[1] + '</li>');
+      } else if (olM) {
+        closeBq();
+        if (inUl) { out.push('</ul>'); inUl = false; }
+        if (!inOl) { out.push('<ol>'); inOl = true; }
+        out.push('<li>' + olM[1] + '</li>');
+      } else if (bqM) {
+        closeLists();
+        if (!inBq) { out.push('<blockquote>'); inBq = true; }
+        out.push(bqM[1]);
+      } else {
+        closeLists();
+        closeBq();
+        out.push(line);
+      }
+    }
+    closeLists();
+    closeBq();
+    src = out.join('\n');
+
+    // Paragraphs from blank-line separated blocks
+    const paragraphs = src.split(/\n{2,}/);
+    src = paragraphs.map(p => {
+      const t = p.trim();
+      if (!t) return '';
+      // Don't wrap block-level elements in <p>
+      if (/^<(h[1-6]|ul|ol|li|pre|blockquote|hr|table)/.test(t)) return t;
+      if (/^\u0000C\d+\u0000$/.test(t)) return t;
+      // Single newlines inside a paragraph become <br>
+      return '<p>' + t.replace(/\n/g, '<br>') + '</p>';
+    }).join('\n');
+
+    // Restore code blocks
+    src = src.replace(/\u0000C(\d+)\u0000/g, (m, idx) => {
+      const code = codeBlocks[parseInt(idx, 10)];
+      return '<pre><code>' + escapeHTML(code) + '</code></pre>';
+    });
+
+    return src;
+  }
+
+  // For the synthesis: preserve <spin>...</spin> and <dispute>...</dispute>
+  // as colored spans, run markdown over everything else.
+  function renderSynthesisMarkdown(text) {
+    if (!text) return '';
+    const tags = [];
+    let src = String(text).replace(
+      /<(spin|dispute)>([\s\S]*?)<\/\1>/gi,
+      (m, tag, content) => {
+        const idx = tags.length;
+        tags.push({ tag: tag.toLowerCase(), content });
+        return `\u0001T${idx}\u0001`;
+      }
+    );
+    // Render markdown (escapes HTML internally)
+    let html = renderMarkdown(src);
+    // Restore tags, rendering markdown inside them too (for **bold** inside <spin>)
+    html = html.replace(/\u0001T(\d+)\u0001/g, (m, idx) => {
+      const t = tags[parseInt(idx, 10)];
+      if (!t) return '';
+      // Render the inner content as inline markdown
+      const inner = renderMarkdown(t.content)
+        .replace(/^<p>/, '').replace(/<\/p>$/, '')
+        .replace(/<\/p>\n?<p>/g, '<br><br>');
+      const title = t.tag === 'spin' ? 'Minor spin or imprecision' : 'Disputed or contested claim';
+      return `<span class="${t.tag}" title="${title}">${inner}</span>`;
+    });
+    return html;
+  }
+
+  function setSynthesisBody(state, payload) {
+    const body = document.getElementById('synthesis-body');
+    body.classList.remove('empty', 'error-text', 'md');
+    if (state === 'idle') {
+      body.classList.add('empty');
+      body.textContent = 'Awaiting prompt. The synthesis runs automatically after all three responses and six cross-evaluations complete.';
+    } else if (state === 'loading') {
+      body.classList.add('empty');
+      body.textContent = '◆ Synthesizing the most truthful answer from all available data...';
+    } else if (state === 'success') {
+      body.classList.add('md');
+      body.innerHTML = renderSynthesisMarkdown(payload.text);
+    } else if (state === 'error') {
+      body.classList.add('error-text');
+      body.textContent = payload.message || 'Synthesis failed.';
+    }
+  }
+
+  function resetRunState(prompt) {
+    runState.prompt = prompt;
+    runState.responses = { anthropic: null, openai: null, google: null };
+    runState.judgments = {};
+  }
+
+  function clearResponses() {
+    PROVIDERS.forEach(p => {
+      const panel = document.getElementById('panel-' + p);
+      panel.classList.remove('loading', 'error', 'success');
+      panel.querySelector('.status-text').textContent = 'Idle';
+      panel.querySelector('.timing').textContent = '';
+      const body = panel.querySelector('.panel-body');
+      body.classList.remove('error-text', 'md');
+      body.classList.add('empty');
+      body.textContent = 'Awaiting prompt.';
+    });
+    PROVIDERS.forEach(s => {
+      PROVIDERS.forEach(j => {
+        if (s !== j) setVerdict(s, j, 'reset');
+      });
+    });
+    setSynthesisStatus('', 'Idle');
+    setSynthesisMeta(null);
+    setSynthesisBody('idle');
+    document.getElementById('truth-pulse').classList.add('hidden');
+    resetRunState('');
+  }
+
+  // ---------------- API CALLS ----------------
+  class EmptyResponseError extends Error {
+    constructor(message) { super(message); this.name = 'EmptyResponseError'; }
+  }
+
+  async function callAnthropic(key, model, prompt, maxTokens) {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'x-api-key': key,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true',
+        'content-type': 'application/json'
+      },
+      body: JSON.stringify({
+        model: model,
+        max_tokens: maxTokens || TOKEN_BUDGETS.anthropic,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}: ${await res.text()}`);
+    const data = await res.json();
+    const text = (data.content || []).map(c => c.text || '').join('');
+    if (!text || !text.trim()) {
+      throw new EmptyResponseError(`Empty content. stop_reason: ${data.stop_reason || 'unknown'}`);
+    }
+    return text;
+  }
+
+  async function callOpenAI(key, model, prompt, maxTokens) {
+    const res = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${key}`, 'content-type': 'application/json' },
+      body: JSON.stringify({
+        model: model,
+        messages: [{ role: 'user', content: prompt }],
+        max_completion_tokens: maxTokens || TOKEN_BUDGETS.openai
+      })
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}: ${await res.text()}`);
+    const data = await res.json();
+    const choice = data.choices && data.choices[0];
+    const content = choice && choice.message && choice.message.content;
+    if (content == null || String(content).trim() === '') {
+      const finish = (choice && choice.finish_reason) || 'unknown';
+      const usage = data.usage || {};
+      const reasoningTokens = usage.completion_tokens_details && usage.completion_tokens_details.reasoning_tokens;
+      const usageDetail = `total=${usage.total_tokens ?? '?'}, completion=${usage.completion_tokens ?? '?'}` +
+        (reasoningTokens != null ? `, reasoning=${reasoningTokens}` : '');
+      throw new EmptyResponseError(`Empty content. finish_reason: ${finish}. Token usage: ${usageDetail}.`);
+    }
+    return String(content);
+  }
+
+  async function callGoogle(key, model, prompt, maxTokens) {
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(key)}`;
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: { maxOutputTokens: maxTokens || TOKEN_BUDGETS.google }
+      })
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}: ${await res.text()}`);
+    const data = await res.json();
+    const candidate = data.candidates && data.candidates[0];
+    const parts = (candidate && candidate.content && candidate.content.parts) || [];
+    const text = parts.map(p => p.text || '').join('');
+    if (!text || !text.trim()) {
+      const finish = (candidate && candidate.finishReason) || 'unknown';
+      throw new EmptyResponseError(`Empty content. finishReason: ${finish}.`);
+    }
+    return text;
+  }
+
+  const PROVIDER_CALL = {
+    anthropic: callAnthropic,
+    openai:    callOpenAI,
+    google:    callGoogle
+  };
+
+  // ---------------- JUDGE PROMPT ----------------
+  function buildJudgePrompt(sourceProvider, sourceModel, originalPrompt, sourceResponse) {
+    return `You are an independent evaluator assessing the truthfulness of another AI model's response.
+
+ORIGINAL PROMPT sent to ${DISPLAY[sourceProvider]} (model: ${sourceModel}):
+"""
+${originalPrompt}
+"""
+
+THE RESPONSE FROM ${DISPLAY[sourceProvider]}:
+"""
+${sourceResponse}
+"""
+
+Your task: rate the veracity of the response on a scale of 0 to 100, where 0 means completely untrue or fabricated and 100 means completely truthful and accurate. Then provide a substantive explanation of your score that:
+- Identifies the specific factual claims in the response that you evaluated
+- States, for each significant claim, whether it is accurate, partially accurate, or inaccurate
+- Cites credible industry sources (peer-reviewed publications, primary documentation, established news organizations, official standards bodies, government data, recognized expert authorities) that would support or refute each claim
+- Flags any claims you cannot verify or that are stale/outdated
+- Notes any conflicts of interest (e.g., if the response promotes products from the same company that produced it)
+
+You may use standard markdown formatting (headers, bold, lists, etc.) in your EXPLANATION for readability.
+
+Format your reply EXACTLY as follows, with no other text before or after:
+
+SCORE: <integer 0-100>
+
+EXPLANATION:
+<your structured explanation with cited sources>`;
+  }
+
+  function parseJudgeReply(raw) {
+    const safeRaw = raw == null ? '' : String(raw);
+    if (!safeRaw.trim()) return { score: null, explanation: '', raw: safeRaw };
+    const text = safeRaw.trim();
+
+    let score = null;
+    const scoreMatch = text.match(/SCORE\s*[:\-]\s*(\d{1,3})/i);
+    if (scoreMatch) {
+      const n = parseInt(scoreMatch[1], 10);
+      if (n >= 0 && n <= 100) score = n;
+    }
+    if (score == null) {
+      const fb = text.match(/\b(100|[1-9]?\d)\b/);
+      if (fb) {
+        const n = parseInt(fb[1], 10);
+        if (n >= 0 && n <= 100) score = n;
+      }
+    }
+
+    let explanation = '';
+    const expMatch = text.match(/EXPLANATION\s*[:\-]?\s*([\s\S]*)/i);
+    if (expMatch && expMatch[1]) {
+      explanation = expMatch[1].trim();
+    } else {
+      explanation = text.replace(/^\s*SCORE\s*[:\-]\s*\d{1,3}\s*/i, '').trim();
+      if (!explanation) explanation = text;
+    }
+
+    return { score, explanation, raw: text };
+  }
+
+  async function fireJudge(sourceProvider, judgeProvider, cfg, originalPrompt, sourceResponse) {
+    const judgeCfg = cfg[judgeProvider];
+    const sourceCfg = cfg[sourceProvider];
+    if (!judgeCfg.key) {
+      setVerdict(sourceProvider, judgeProvider, 'errored', { reason: 'No API key for judge' });
+      return;
+    }
+    setVerdict(sourceProvider, judgeProvider, 'pending');
+    try {
+      const judgePrompt = buildJudgePrompt(sourceProvider, sourceCfg.model, originalPrompt, sourceResponse);
+      const raw = await PROVIDER_CALL[judgeProvider](judgeCfg.key, judgeCfg.model, judgePrompt);
+      const parsed = parseJudgeReply(raw);
+      if (parsed.score == null) {
+        setVerdict(sourceProvider, judgeProvider, 'unparseable', {
+          raw: (parsed.raw || '').slice(0, 2000)
+        });
+      } else {
+        setVerdict(sourceProvider, judgeProvider, 'scored', {
+          score: parsed.score,
+          explanation: parsed.explanation
+        });
+      }
+    } catch (err) {
+      const msg = err && err.message ? String(err.message) : String(err);
+      if (err && err.name === 'EmptyResponseError') {
+        setVerdict(sourceProvider, judgeProvider, 'empty', { reason: msg });
+      } else {
+        setVerdict(sourceProvider, judgeProvider, 'errored', { reason: msg.slice(0, 500) });
+      }
+    }
+  }
+
+  // ---------------- SYNTHESIS ----------------
+  function buildSynthesisPrompt(cfg) {
+    const sections = [];
+
+    sections.push(`You are synthesizing the single most truthful possible answer from three AI models' responses to a question, taking into account how each model judged the others.`);
+
+    sections.push(`ORIGINAL PROMPT:
+"""
+${runState.prompt}
+"""`);
+
+    sections.push(`THE THREE MODELS:
+- Anthropic (${cfg.anthropic.model})
+- OpenAI (${cfg.openai.model})
+- Google (${cfg.google.model})`);
+
+    sections.push('THE THREE RESPONSES:');
+    PROVIDERS.forEach(p => {
+      if (runState.responses[p]) {
+        sections.push(`[${DISPLAY[p]}]:
+"""
+${runState.responses[p]}
+"""`);
+      } else {
+        sections.push(`[${DISPLAY[p]}]: (no response received - skip this model in your synthesis)`);
+      }
+    });
+
+    sections.push('THE CROSS-EVALUATIONS (each judged by the other two models):');
+    let evalCount = 0;
+    PROVIDERS.forEach(source => {
+      PROVIDERS.forEach(judge => {
+        if (source === judge) return;
+        const j = runState.judgments[`${source}-${judge}`];
+        if (j && j.score != null) {
+          evalCount++;
+          sections.push(`${DISPLAY[judge]} judged ${DISPLAY[source]}'s response (score: ${j.score}/100):
+${j.explanation || '(no explanation given)'}`);
+        }
+      });
+    });
+    if (evalCount === 0) {
+      sections.push('(no successful evaluations - synthesize from responses alone)');
+    }
+
+    sections.push(`YOUR TASK:
+
+Compose the single most truthful answer to the original prompt. Draw on the strongest, most verifiable claims from all available responses. Down-weight or omit claims that judges flagged as inaccurate, stale, or biased. Where models genuinely agree, present that consensus confidently. Where they disagree, present the better-supported position but mark the disagreement.
+
+FORMATTING:
+
+Use standard markdown for structure and readability — headers (#, ##, ###), bold (**text**), italic (*text*), bulleted and numbered lists, inline code with backticks, code blocks with triple backticks, and blockquotes (>). Markdown will render properly for the reader.
+
+INLINE ANNOTATION RULES (critical):
+
+In addition to markdown, use exactly two custom inline tags to flag concerns. The text inside these tags renders in colored text — the text itself becomes yellow or red (no underline, no background highlight):
+
+1. Wrap text in <spin>...</spin> when a claim has minor concerns: a soft framing issue, slight overstatement, mild imprecision, or something one judge noted as needing care. The text inside renders in yellow.
+
+2. Wrap text in <dispute>...</dispute> when a claim is genuinely contested across models, was scored low by judges, may be factually wrong, is materially outdated, or carries an undisclosed conflict of interest. The text inside renders in red.
+
+3. Leave well-supported consensus claims unmarked (they render in normal text color).
+
+GUIDELINES:
+- Tag inline within sentences. Do not wrap entire paragraphs or headings.
+- Tag the specific claim or phrase that warrants the flag, not surrounding context.
+- You may use markdown formatting (e.g., **bold**) inside the spin/dispute tags.
+- Use the tags with restraint. Most of the synthesis should be unmarked. A reader should be able to scan the response and see the few caveats stand out clearly.
+- Do not nest the tags. Do not use any other custom markup or HTML beyond these two and standard markdown.
+- Do not add meta-commentary explaining your annotations. Do not include section headers like "Synthesis:" or "Answer:". Just write the synthesized answer.
+
+Begin the synthesis now:`);
+
+    return sections.join('\n\n');
+  }
+
+  function computeSynthesisStats() {
+    const sources = PROVIDERS.filter(p => runState.responses[p]).length;
+    const judgeKeys = Object.keys(runState.judgments);
+    const scores = judgeKeys.map(k => runState.judgments[k].score).filter(s => s != null);
+    const evals = scores.length;
+    const avg = evals > 0 ? (scores.reduce((a, b) => a + b, 0) / evals) : null;
+    return { sources, evals, avg };
+  }
+
+  async function fireSynthesis(cfg) {
+    const stats = computeSynthesisStats();
+    setSynthesisMeta(stats);
+
+    if (!cfg.anthropic.key) {
+      setSynthesisStatus('error', 'No Anthropic key', null);
+      setSynthesisBody('error', { message: 'Synthesis requires an Anthropic API key (Anthropic is the designated synthesizer). Add the key in Configuration.' });
+      return;
+    }
+    if (stats.sources === 0) {
+      setSynthesisStatus('error', 'No data', null);
+      setSynthesisBody('error', { message: 'No source responses available to synthesize. All three model calls failed.' });
+      return;
+    }
+
+    setSynthesisStatus('loading', 'Synthesizing...');
+    setSynthesisBody('loading');
+
+    // Flash the tab to indicate something is happening if user is on another tab
+    const truthBtn = document.querySelector('.tab-button[data-tab="truth"]');
+    if (!truthBtn.classList.contains('active')) {
+      document.getElementById('truth-pulse').classList.remove('hidden');
+    }
+
+    const start = performance.now();
+    try {
+      const prompt = buildSynthesisPrompt(cfg);
+      const text = await callAnthropic(cfg.anthropic.key, cfg.anthropic.model, prompt, SYNTHESIS_MAX_TOKENS);
+      const ms = performance.now() - start;
+      setSynthesisStatus('success', 'Complete', ms);
+      setSynthesisBody('success', { text: text });
+    } catch (err) {
+      const ms = performance.now() - start;
+      const msg = err && err.message ? String(err.message) : String(err);
+      setSynthesisStatus('error', 'Error', ms);
+      setSynthesisBody('error', { message: msg });
+    }
+  }
+
+  // ---------------- ORCHESTRATION ----------------
+  async function fireSource(provider, cfg, prompt) {
+    const start = performance.now();
+    setPanel(provider, 'loading');
+    try {
+      const text = await PROVIDER_CALL[provider](cfg[provider].key, cfg[provider].model, prompt);
+      const ms = performance.now() - start;
+      setPanel(provider, 'success', text, ms);
+      runState.responses[provider] = text;
+      return text;
+    } catch (err) {
+      const ms = performance.now() - start;
+      const msg = err && err.message ? String(err.message) : String(err);
+      setPanel(provider, 'error', msg, ms);
+      return null;
+    }
+  }
+
+  async function sendPrompt() {
+    const prompt = document.getElementById('prompt').value.trim();
+    if (!prompt) { alert('Enter a prompt first.'); return; }
+
+    const cfg = getCfg();
+    const anyKey = PROVIDERS.some(p => cfg[p].key);
+    if (!anyKey) {
+      alert('At least one API key required. Open Configuration to set keys.');
+      document.getElementById('settings').classList.add('open');
+      return;
+    }
+
+    // Reset everything
+    resetRunState(prompt);
+    PROVIDERS.forEach(s => {
+      PROVIDERS.forEach(j => {
+        if (s !== j) setVerdict(s, j, 'reset');
+      });
+    });
+    setSynthesisStatus('', 'Idle');
+    setSynthesisMeta(null);
+    setSynthesisBody('idle');
+
+    const btn = document.getElementById('send-btn');
+    btn.disabled = true;
+    btn.textContent = 'Working...';
+
+    // Phase 1+2: fire source calls, and as each completes, fire its judge calls
+    const sourceJobs = PROVIDERS.map(async source => {
+      if (!cfg[source].key) {
+        setPanel(source, 'error', 'No API key configured.');
+        PROVIDERS.forEach(j => {
+          if (j !== source) setVerdict(source, j, 'errored', { reason: 'No source response to judge' });
+        });
+        return;
+      }
+      const text = await fireSource(source, cfg, prompt);
+      if (text == null) {
+        PROVIDERS.forEach(j => {
+          if (j !== source) setVerdict(source, j, 'errored', { reason: 'Source call failed' });
+        });
+        return;
+      }
+      const judges = PROVIDERS.filter(j => j !== source);
+      await Promise.allSettled(judges.map(j => fireJudge(source, j, cfg, prompt, text)));
+    });
+
+    await Promise.allSettled(sourceJobs);
+
+    // Phase 3: synthesize
+    await fireSynthesis(cfg);
+
+    btn.disabled = false;
+    btn.textContent = 'Send, cross-judge & synthesize';
+  }
+
+  document.getElementById('prompt').addEventListener('keydown', e => {
+    if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+      e.preventDefault();
+      sendPrompt();
+    }
+  });
+
+  ['anthropic-model', 'openai-model', 'google-model'].forEach(id => {
+    document.getElementById(id).addEventListener('input', updateModelLabels);
+  });
+
+  loadConfig();
+
+  // Test surface: expose constants and the singleton runState on window so
+  // an automated test harness can introspect implementation state.
+  // No effect on browser usage; production code never reads these from window.
+  window.PROVIDERS = PROVIDERS;
+  window.DISPLAY = DISPLAY;
+  window.TOKEN_BUDGETS = TOKEN_BUDGETS;
+  window.SYNTHESIS_MAX_TOKENS = SYNTHESIS_MAX_TOKENS;
+  window.STORAGE_KEY = STORAGE_KEY;
+  window.LEGACY_KEYS = LEGACY_KEYS;
+  window.runState = runState;
+  window.EmptyResponseError = EmptyResponseError;
+  window.PROVIDER_CALL = PROVIDER_CALL;
+</script>
+</body>
+</html>

@@ -1,0 +1,26 @@
+{
+  "name": "verasity-triangulation",
+  "version": "4.1.0",
+  "private": true,
+  "description": "Triangulation: a single-file HTML app that submits a prompt to three LLMs in parallel, cross-evaluates the responses, and synthesizes a single annotated answer.",
+  "type": "module",
+  "scripts": {
+    "serve": "http-server app -p 4173 -c-1 --silent",
+    "test": "npm run test:unit && npm run test:integration && npm run test:e2e",
+    "test:unit": "vitest run tests/unit",
+    "test:integration": "vitest run tests/integration",
+    "test:watch": "vitest tests/unit tests/integration",
+    "test:e2e": "playwright test",
+    "test:e2e:headed": "playwright test --headed",
+    "test:e2e:install": "playwright install --with-deps chromium",
+    "coverage": "vitest run --coverage tests/unit tests/integration"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.49.1",
+    "@vitest/coverage-v8": "^2.1.8",
+    "happy-dom": "^15.11.7",
+    "http-server": "^14.1.1",
+    "jsdom": "^25.0.1",
+    "vitest": "^2.1.8"
+  }
+}
