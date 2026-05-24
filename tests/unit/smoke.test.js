@@ -30,6 +30,7 @@ describe('app loader smoke test', () => {
     expect(a.PROVIDERS).toEqual(['anthropic', 'openai', 'google']);
     expect(a.TOKEN_BUDGETS).toEqual({ anthropic: 4096, openai: 16384, google: 4096 });
     expect(a.SYNTHESIS_MAX_TOKENS).toBe(8192);
-    expect(a.STORAGE_KEY).toBe('triangulation_v4_1_config');
+    expect(a.STORAGE_KEY).toBe('triangulation_v5_config');
+    expect(a.SCRUB_MAX_TOKENS).toBe(8192);
   });
 });

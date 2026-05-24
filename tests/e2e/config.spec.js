@@ -34,7 +34,7 @@ test.describe('configuration panel', () => {
     await page.locator('.settings-actions button:not(.secondary)').click();
     await expect(page.locator('#save-status')).toHaveClass(/visible/);
 
-    const stored = await page.evaluate(() => localStorage.getItem('triangulation_v4_1_config'));
+    const stored = await page.evaluate(() => localStorage.getItem('triangulation_v5_config'));
     expect(stored).toBeTruthy();
     const cfg = JSON.parse(stored);
     expect(cfg.anthropicKey).toBe('sk-ant-saved');
@@ -69,7 +69,7 @@ test.describe('configuration panel', () => {
 
     await expect(page.locator('#anthropic-key')).toHaveValue('');
     await expect(page.locator('#anthropic-model')).toHaveValue('claude-opus-4-7');
-    const stored = await page.evaluate(() => localStorage.getItem('triangulation_v4_1_config'));
+    const stored = await page.evaluate(() => localStorage.getItem('triangulation_v5_config'));
     expect(stored).toBeNull();
   });
 

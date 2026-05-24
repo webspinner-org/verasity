@@ -146,12 +146,21 @@ describe('configuration storage', () => {
   describe('legacy fallback order', () => {
     it('LEGACY_KEYS ordered newest-first', () => {
       expect(a.LEGACY_KEYS).toEqual([
+        'triangulation_v4_1_config',
         'triangulation_v4_config',
         'triangulation_v3_1_config',
         'triangulation_v3_config',
         'triangulation_v2_config',
         'triangulation_v1_config'
       ]);
+    });
+
+    it('falls back to v4.1 storage key (the most recent legacy)', () => {
+      dom.window.localStorage.setItem('triangulation_v4_1_config', JSON.stringify({
+        anthropicKey: 'sk-from-v4-1'
+      }));
+      a.loadConfig();
+      expect(get('anthropic-key')).toBe('sk-from-v4-1');
     });
   });
 });

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Triangulation v4.1 — Truth Be Told (Markdown)</title>
+<title>Triangulation v5.0 — Substrate-Grounded</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=IBM+Plex+Serif:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&display=swap" rel="stylesheet">
@@ -459,16 +459,150 @@
   }
 
   /* The inline annotations: TEXT colored, no background, no underline */
-  .synthesis-body .spin {
+  .synthesis-body .spin,
+  .scrub-body .spin {
     color: var(--warn);
     font-weight: 500;
     cursor: help;
   }
-  .synthesis-body .dispute {
+  .synthesis-body .dispute,
+  .scrub-body .dispute {
     color: var(--error);
     font-weight: 500;
     cursor: help;
   }
+  /* Substrate-grounded annotations (v5) */
+  .synthesis-body .supported,
+  .scrub-body .supported {
+    color: var(--success);
+    font-weight: 500;
+    cursor: help;
+  }
+  .synthesis-body .uncovered,
+  .scrub-body .uncovered {
+    color: var(--warn);
+    font-weight: 500;
+    cursor: help;
+  }
+  .synthesis-body .contradicted,
+  .scrub-body .contradicted {
+    color: var(--error);
+    font-weight: 500;
+    cursor: help;
+  }
+
+  /* SUBSTRATE TAB (v5) */
+  .substrate-container {
+    background: var(--bg-panel);
+    border: 1px solid var(--border);
+    border-top: 2px solid var(--success);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .substrate-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+    background: rgba(0, 0, 0, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+  .substrate-title-block { display: flex; flex-direction: column; gap: 2px; }
+  .substrate-title {
+    font-family: 'IBM Plex Serif', Georgia, serif;
+    font-size: 20px; font-style: italic; font-weight: 500;
+    color: var(--success);
+  }
+  .substrate-subtitle {
+    font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--text-faint);
+  }
+  .substrate-status {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 10px; color: var(--text-faint);
+    letter-spacing: 0.06em; text-transform: uppercase;
+  }
+  .substrate-status .status-dot { width: 8px; height: 8px; }
+  .substrate-status.loading .status-dot { background: var(--accent); animation: pulse 1s ease-in-out infinite; }
+  .substrate-status.success .status-dot { background: var(--success); }
+  .substrate-status.error .status-dot { background: var(--error); }
+  .substrate-status .timing { color: var(--text-faint); }
+
+  .substrate-input-section {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex; flex-direction: column; gap: 12px;
+  }
+  .substrate-input-row {
+    display: flex; gap: 12px; align-items: flex-start;
+  }
+  .substrate-input-row > div { flex: 1; display: flex; flex-direction: column; gap: 4px; }
+  .substrate-input-row label {
+    font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--text-dim);
+  }
+  textarea.substrate-text {
+    width: 100%; min-height: 140px; resize: vertical;
+    background: var(--bg-input); border: 1px solid var(--border); border-radius: 3px;
+    padding: 10px 12px; font-family: inherit; font-size: 12px; line-height: 1.6;
+    color: var(--text); outline: none; transition: border-color 0.15s;
+  }
+  textarea.substrate-text:focus { border-color: var(--success); }
+  .substrate-actions {
+    display: flex; align-items: center; gap: 12px;
+  }
+  .substrate-actions .hint { font-size: 11px; color: var(--text-faint); }
+  button.substrate-go {
+    background: var(--success); color: var(--bg);
+  }
+  button.substrate-go:hover:not(:disabled) { background: #98d8b3; }
+
+  .substrate-legend {
+    padding: 12px 20px;
+    background: rgba(0, 0, 0, 0.12);
+    border-bottom: 1px solid var(--border);
+    display: flex; flex-wrap: wrap; gap: 24px;
+    font-size: 11px; color: var(--text-dim);
+  }
+  .substrate-legend .legend-text-swatch.supported-color { color: var(--success); }
+  .substrate-legend .legend-text-swatch.uncovered-color { color: var(--warn); }
+  .substrate-legend .legend-text-swatch.contradicted-color { color: var(--error); }
+  .substrate-legend .legend-text-swatch.unmarked-color { color: var(--text-dim); }
+
+  .substrate-meta {
+    padding: 10px 20px;
+    background: rgba(0, 0, 0, 0.08);
+    border-bottom: 1px solid var(--border);
+    font-size: 10px; color: var(--text-faint);
+    letter-spacing: 0.05em;
+    display: flex; flex-wrap: wrap; gap: 20px;
+  }
+  .substrate-meta strong { color: var(--text-dim); font-weight: 500; }
+
+  .scrub-body {
+    padding: 24px 28px;
+    font-family: 'IBM Plex Serif', Georgia, serif;
+    font-size: 16px; line-height: 1.75; color: var(--text);
+    min-height: 200px; word-wrap: break-word;
+  }
+  .scrub-body.empty {
+    color: var(--text-faint); font-style: italic; text-align: center;
+    padding: 60px 28px; font-size: 14px; white-space: pre-wrap;
+  }
+  .scrub-body.error-text {
+    color: var(--error); font-family: 'JetBrains Mono', monospace;
+    font-size: 12px; white-space: pre-wrap;
+  }
+  .scrub-body.md h1, .scrub-body.md h2, .scrub-body.md h3, .scrub-body.md h4 {
+    font-family: 'IBM Plex Serif', Georgia, serif;
+  }
+  .scrub-body.md h1 { font-size: 1.5em; }
+  .scrub-body.md h2 { font-size: 1.3em; }
+  .scrub-body.md h3 { font-size: 1.15em; }
+  .scrub-body.md p { margin: 0.7em 0; }
+  .scrub-body.md ul, .scrub-body.md ol { margin: 0.7em 0; }
+  .scrub-body.md code { font-family: 'JetBrains Mono', monospace; font-size: 0.85em; }
 
   /* MARKDOWN RENDERING - applied via .md class */
   .md h1, .md h2, .md h3, .md h4 {
@@ -543,7 +677,7 @@
 
   <header>
     <div class="brand"><span class="brand-mark">◆</span>Triangulation</div>
-    <div class="meta">v4.1 — truth be told (markdown)</div>
+    <div class="meta">v5.0 — substrate-grounded</div>
   </header>
 
   <div class="warning">
@@ -594,6 +728,9 @@
     <button class="tab-button" data-tab="veracity" onclick="showTab('veracity')">Veracity Check</button>
     <button class="tab-button truth-be-told" data-tab="truth" onclick="showTab('truth')">
       Truth Be Told<span class="tab-pulse hidden" id="truth-pulse"></span>
+    </button>
+    <button class="tab-button" data-tab="substrate" onclick="showTab('substrate')">
+      Substrate<span class="tab-pulse hidden" id="substrate-pulse"></span>
     </button>
   </div>
 
@@ -777,13 +914,66 @@
     </div>
   </div>
 
-  <footer>three voices. six verdicts. one synthesized truth.</footer>
+  <!-- TAB 4: SUBSTRATE (v5) -->
+  <div class="tab-panel" data-tab="substrate">
+    <div class="substrate-container">
+      <div class="substrate-header">
+        <div class="substrate-title-block">
+          <div class="substrate-title">Substrate Check</div>
+          <div class="substrate-subtitle">Re-evaluate the synthesis against an authoritative source you provide</div>
+        </div>
+        <div class="substrate-status" id="substrate-status">
+          <div class="status-dot"></div>
+          <span class="status-text">Idle</span>
+          <span class="timing"></span>
+        </div>
+      </div>
+
+      <div class="substrate-input-section">
+        <div class="substrate-input-row">
+          <div>
+            <label for="substrate-text">Source passage (paste authoritative text)</label>
+            <textarea class="substrate-text" id="substrate-text" placeholder="Paste a primary source, peer-reviewed excerpt, official documentation, or other authoritative passage. Claims in the synthesis will be re-tagged based on whether this passage supports, contradicts, or fails to cover them."></textarea>
+          </div>
+        </div>
+        <div class="substrate-input-row">
+          <div>
+            <label for="substrate-label">Citation / label (optional)</label>
+            <input type="text" id="substrate-label" placeholder="e.g., NASA JWST mission overview, doi:10.1234/example" />
+          </div>
+        </div>
+        <div class="substrate-actions">
+          <button class="substrate-go" id="substrate-btn" onclick="runScrub()" disabled>Re-evaluate against substrate</button>
+          <button class="secondary" onclick="clearScrub()">Clear</button>
+          <span class="hint" id="substrate-hint">Submit a prompt first; the substrate check runs against the synthesis output.</span>
+        </div>
+      </div>
+
+      <div class="substrate-legend">
+        <span class="legend-item"><span class="legend-text-swatch supported-color">Supported by substrate</span></span>
+        <span class="legend-item"><span class="legend-text-swatch unmarked-color">Unmarked (irrelevant or unclear)</span></span>
+        <span class="legend-item"><span class="legend-text-swatch uncovered-color">Substrate is silent on this claim</span></span>
+        <span class="legend-item"><span class="legend-text-swatch contradicted-color">Contradicted by substrate</span></span>
+      </div>
+
+      <div class="substrate-meta" id="substrate-meta" style="display: none;">
+        <span><strong>Supported:</strong> <span id="meta-supported">—</span></span>
+        <span><strong>Uncovered:</strong> <span id="meta-uncovered">—</span></span>
+        <span><strong>Contradicted:</strong> <span id="meta-contradicted">—</span></span>
+        <span><strong>Coverage:</strong> <span id="meta-coverage">—</span></span>
+      </div>
+
+      <div class="scrub-body empty" id="scrub-body">Awaiting substrate input. Paste an authoritative passage above and click Re-evaluate after a synthesis has completed.</div>
+    </div>
+  </div>
+
+  <footer>three voices. six verdicts. one synthesized truth. one substrate-grounded re-evaluation.</footer>
 </div>
 
 <script>
   // ---------------- CONFIG ----------------
-  const STORAGE_KEY = 'triangulation_v4_1_config';
-  const LEGACY_KEYS = ['triangulation_v4_config', 'triangulation_v3_1_config', 'triangulation_v3_config', 'triangulation_v2_config', 'triangulation_v1_config'];
+  const STORAGE_KEY = 'triangulation_v5_config';
+  const LEGACY_KEYS = ['triangulation_v4_1_config', 'triangulation_v4_config', 'triangulation_v3_1_config', 'triangulation_v3_config', 'triangulation_v2_config', 'triangulation_v1_config'];
   const PROVIDERS = ['anthropic', 'openai', 'google'];
   const DISPLAY = { anthropic: 'Anthropic', openai: 'OpenAI', google: 'Google' };
 
@@ -793,12 +983,19 @@
     google:    4096
   };
   const SYNTHESIS_MAX_TOKENS = 8192;
+  const SCRUB_MAX_TOKENS = 8192;
 
-  // Run state - reset on each send. Synthesis reads from here.
+  // Run state - reset on each send. Synthesis and scrub read from here.
   const runState = {
     prompt: '',
     responses: { anthropic: null, openai: null, google: null },
-    judgments: {} // key: `${source}-${judge}` -> { score, explanation }
+    judgments: {}, // key: `${source}-${judge}` -> { score, explanation }
+    synthesis: null, // raw synthesis text (set after successful synthesis)
+    substrate: {
+      text: '',
+      label: '',
+      scrubbed: null   // raw scrub text after successful re-evaluation
+    }
   };
 
   function loadConfig() {
@@ -876,6 +1073,9 @@
     });
     if (name === 'truth') {
       document.getElementById('truth-pulse').classList.add('hidden');
+    }
+    if (name === 'substrate') {
+      document.getElementById('substrate-pulse').classList.add('hidden');
     }
   }
 
@@ -1100,13 +1300,24 @@
     return src;
   }
 
-  // For the synthesis: preserve <spin>...</spin> and <dispute>...</dispute>
-  // as colored spans, run markdown over everything else.
+  // Annotation tag → tooltip title mapping. Used by both the synthesis body
+  // (spin/dispute from LLM peer review) and the scrub body (supported/uncovered/
+  // contradicted from substrate-grounded re-evaluation).
+  const ANNOTATION_TITLES = {
+    spin:         'Minor spin or imprecision',
+    dispute:      'Disputed or contested claim',
+    supported:    'Supported by substrate',
+    uncovered:    'Substrate is silent on this claim',
+    contradicted: 'Contradicted by substrate'
+  };
+
+  // For the synthesis (and the substrate-scrubbed re-render): preserve the five
+  // annotation tags as colored spans, run markdown over everything else.
   function renderSynthesisMarkdown(text) {
     if (!text) return '';
     const tags = [];
     let src = String(text).replace(
-      /<(spin|dispute)>([\s\S]*?)<\/\1>/gi,
+      /<(spin|dispute|supported|uncovered|contradicted)>([\s\S]*?)<\/\1>/gi,
       (m, tag, content) => {
         const idx = tags.length;
         tags.push({ tag: tag.toLowerCase(), content });
@@ -1123,10 +1334,17 @@
       const inner = renderMarkdown(t.content)
         .replace(/^<p>/, '').replace(/<\/p>$/, '')
         .replace(/<\/p>\n?<p>/g, '<br><br>');
-      const title = t.tag === 'spin' ? 'Minor spin or imprecision' : 'Disputed or contested claim';
+      const title = ANNOTATION_TITLES[t.tag] || '';
       return `<span class="${t.tag}" title="${title}">${inner}</span>`;
     });
     return html;
+  }
+
+  // Annotation tag → tooltip title mapping. Used by both the synthesis body
+  // (spin/dispute from LLM peer review) and the scrub body (supported/
+  // uncovered/contradicted from substrate-grounded re-evaluation).
+  function renderScrubMarkdown(text) {
+    return renderSynthesisMarkdown(text);
   }
 
   function setSynthesisBody(state, payload) {
@@ -1151,6 +1369,8 @@
     runState.prompt = prompt;
     runState.responses = { anthropic: null, openai: null, google: null };
     runState.judgments = {};
+    runState.synthesis = null;
+    runState.substrate.scrubbed = null;
   }
 
   function clearResponses() {
@@ -1173,7 +1393,12 @@
     setSynthesisMeta(null);
     setSynthesisBody('idle');
     document.getElementById('truth-pulse').classList.add('hidden');
+    setSubstrateStatus('', 'Idle', null);
+    setSubstrateMeta(null);
+    setSubstrateBody('idle');
+    document.getElementById('substrate-pulse').classList.add('hidden');
     resetRunState('');
+    updateSubstrateButtonState();
   }
 
   // ---------------- API CALLS ----------------
@@ -1468,12 +1693,208 @@ Begin the synthesis now:`);
       const ms = performance.now() - start;
       setSynthesisStatus('success', 'Complete', ms);
       setSynthesisBody('success', { text: text });
+      runState.synthesis = text;
+      updateSubstrateButtonState();
     } catch (err) {
       const ms = performance.now() - start;
       const msg = err && err.message ? String(err.message) : String(err);
       setSynthesisStatus('error', 'Error', ms);
       setSynthesisBody('error', { message: msg });
+      runState.synthesis = null;
+      updateSubstrateButtonState();
     }
+  }
+
+  // ---------------- SUBSTRATE SCRUB (v5) ----------------
+  // Counts each annotation tag in the scrub output. Coverage = tagged / (total
+  // top-level claims). We approximate top-level claims by tag count; this is
+  // a heuristic, not a precise measure.
+  function computeScrubStats(scrubText) {
+    if (!scrubText) return { supported: 0, uncovered: 0, contradicted: 0, coverage: null };
+    const count = (tag) => {
+      const re = new RegExp(`<${tag}\\b[^>]*>`, 'gi');
+      const m = scrubText.match(re);
+      return m ? m.length : 0;
+    };
+    const supported    = count('supported');
+    const uncovered    = count('uncovered');
+    const contradicted = count('contradicted');
+    const total = supported + uncovered + contradicted;
+    const coverage = total > 0 ? supported / total : null;
+    return { supported, uncovered, contradicted, coverage };
+  }
+
+  function buildScrubPrompt(cfg, substrate) {
+    const label = substrate.label && substrate.label.trim()
+      ? ` (citation: ${substrate.label.trim()})`
+      : '';
+    return `You are re-evaluating an AI-synthesized answer against an authoritative source passage provided by the user.
+
+THE SYNTHESIZED ANSWER (with prior peer-review tags from LLM judges; ignore those tags for this task):
+"""
+${runState.synthesis || ''}
+"""
+
+THE AUTHORITATIVE SOURCE PASSAGE${label}:
+"""
+${substrate.text}
+"""
+
+YOUR TASK:
+
+Re-emit the answer with substrate-grounded annotations applied to factual claims, based ONLY on what the source passage above asserts.
+
+ANNOTATION TAGS (these REPLACE the prior peer-review tags):
+
+1. Wrap a claim in <supported>...</supported> when the source passage directly supports it. The text inside renders in green.
+
+2. Wrap a claim in <uncovered>...</uncovered> when the claim is the kind of thing the source passage should address but does not. The text inside renders in yellow.
+
+3. Wrap a claim in <contradicted>...</contradicted> when the source passage directly refutes the claim. The text inside renders in red.
+
+4. Leave a claim UNMARKED (no tag) when:
+   - It is unrelated to the topic of the source passage, OR
+   - You cannot determine from the passage alone whether it is supported or refuted.
+
+RULES:
+- REMOVE all existing <spin> and <dispute> tags. They are peer-review opinions; you are replacing them with substrate-grounded annotations.
+- Apply tags inline to specific factual claims, not entire paragraphs or section headers.
+- Be CONSERVATIVE: use <supported> only when the passage clearly affirms the claim; use <contradicted> only when the passage clearly refutes it.
+- Use <uncovered> when a claim is on-topic for the passage but the passage is silent — a kind of "missing coverage" signal.
+- Preserve all markdown formatting (headers, lists, bold, italic, code, blockquotes, paragraph structure).
+- Do not nest tags. Do not introduce any HTML beyond these three tags and standard markdown.
+- Do not add meta-commentary about your annotations. Do not add section headers like "Re-evaluated:" or "Annotated:". Just emit the re-annotated answer text.
+
+Begin the re-annotated answer now:`;
+  }
+
+  async function fireScrub(cfg, substrate) {
+    if (!cfg.anthropic.key) {
+      setSubstrateStatus('error', 'No Anthropic key', null);
+      setSubstrateBody('error', { message: 'Substrate re-evaluation requires an Anthropic API key. Add the key in Configuration.' });
+      return;
+    }
+    if (!runState.synthesis || !runState.synthesis.trim()) {
+      setSubstrateStatus('error', 'No synthesis', null);
+      setSubstrateBody('error', { message: 'Submit a prompt and wait for the synthesis to complete before running a substrate check.' });
+      return;
+    }
+    if (!substrate.text || !substrate.text.trim()) {
+      setSubstrateStatus('error', 'No substrate', null);
+      setSubstrateBody('error', { message: 'Paste an authoritative source passage above before running the substrate check.' });
+      return;
+    }
+
+    runState.substrate.text  = substrate.text;
+    runState.substrate.label = substrate.label || '';
+
+    setSubstrateStatus('loading', 'Re-evaluating...');
+    setSubstrateBody('loading');
+
+    // Substrate scrubs are launched from inside the Substrate tab, so showing
+    // the pulse only when the user is on another tab (the Truth Be Told
+    // pattern) won't help if they navigate away mid-scrub. We make the pulse
+    // visible unconditionally on scrub start; showTab('substrate') clears it.
+    document.getElementById('substrate-pulse').classList.remove('hidden');
+
+    const start = performance.now();
+    try {
+      const prompt = buildScrubPrompt(cfg, substrate);
+      const text = await callAnthropic(cfg.anthropic.key, cfg.anthropic.model, prompt, SCRUB_MAX_TOKENS);
+      const ms = performance.now() - start;
+      runState.substrate.scrubbed = text;
+      const stats = computeScrubStats(text);
+      setSubstrateMeta(stats);
+      setSubstrateStatus('success', 'Complete', ms);
+      setSubstrateBody('success', { text: text });
+    } catch (err) {
+      const ms = performance.now() - start;
+      const msg = err && err.message ? String(err.message) : String(err);
+      setSubstrateStatus('error', 'Error', ms);
+      setSubstrateBody('error', { message: msg });
+    }
+  }
+
+  function setSubstrateStatus(state, text, ms) {
+    const wrap = document.getElementById('substrate-status');
+    wrap.classList.remove('loading', 'success', 'error');
+    if (state) wrap.classList.add(state);
+    wrap.querySelector('.status-text').textContent = text || '';
+    wrap.querySelector('.timing').textContent = ms != null ? (ms / 1000).toFixed(2) + 's' : '';
+  }
+
+  function setSubstrateMeta(stats) {
+    const meta = document.getElementById('substrate-meta');
+    if (!stats) { meta.style.display = 'none'; return; }
+    meta.style.display = 'flex';
+    document.getElementById('meta-supported').textContent    = String(stats.supported);
+    document.getElementById('meta-uncovered').textContent    = String(stats.uncovered);
+    document.getElementById('meta-contradicted').textContent = String(stats.contradicted);
+    document.getElementById('meta-coverage').textContent =
+      stats.coverage != null ? `${(stats.coverage * 100).toFixed(0)}%` : 'n/a';
+  }
+
+  function setSubstrateBody(state, payload) {
+    const body = document.getElementById('scrub-body');
+    body.classList.remove('empty', 'error-text', 'md');
+    if (state === 'idle') {
+      body.classList.add('empty');
+      body.textContent = 'Awaiting substrate input. Paste an authoritative passage above and click Re-evaluate after a synthesis has completed.';
+    } else if (state === 'loading') {
+      body.classList.add('empty');
+      body.textContent = '◆ Re-evaluating the synthesis against the substrate...';
+    } else if (state === 'success') {
+      body.classList.add('md');
+      body.innerHTML = renderScrubMarkdown(payload.text);
+    } else if (state === 'error') {
+      body.classList.add('error-text');
+      body.textContent = payload.message || 'Substrate check failed.';
+    }
+  }
+
+  function updateSubstrateButtonState() {
+    const btn  = document.getElementById('substrate-btn');
+    const hint = document.getElementById('substrate-hint');
+    if (!btn || !hint) return;
+    const hasSynthesis = !!(runState.synthesis && runState.synthesis.trim());
+    const hasSubstrate = !!(document.getElementById('substrate-text').value.trim());
+    btn.disabled = !(hasSynthesis && hasSubstrate);
+    if (!hasSynthesis) {
+      hint.textContent = 'Submit a prompt first; the substrate check runs against the synthesis output.';
+    } else if (!hasSubstrate) {
+      hint.textContent = 'Paste an authoritative source passage above to enable the check.';
+    } else {
+      hint.textContent = 'Ready. The substrate check will re-emit the synthesis with substrate-grounded tags.';
+    }
+  }
+
+  async function runScrub() {
+    const cfg = getCfg();
+    const substrate = {
+      text:  document.getElementById('substrate-text').value,
+      label: document.getElementById('substrate-label').value
+    };
+    const btn = document.getElementById('substrate-btn');
+    btn.disabled = true;
+    const prevText = btn.textContent;
+    btn.textContent = 'Working...';
+    try {
+      await fireScrub(cfg, substrate);
+    } finally {
+      btn.textContent = prevText;
+      updateSubstrateButtonState();
+    }
+  }
+
+  function clearScrub() {
+    document.getElementById('substrate-text').value = '';
+    document.getElementById('substrate-label').value = '';
+    runState.substrate = { text: '', label: '', scrubbed: null };
+    setSubstrateStatus('', 'Idle', null);
+    setSubstrateMeta(null);
+    setSubstrateBody('idle');
+    document.getElementById('substrate-pulse').classList.add('hidden');
+    updateSubstrateButtonState();
   }
 
   // ---------------- ORCHESTRATION ----------------
@@ -1561,7 +1982,10 @@ Begin the synthesis now:`);
     document.getElementById(id).addEventListener('input', updateModelLabels);
   });
 
+  document.getElementById('substrate-text').addEventListener('input', updateSubstrateButtonState);
+
   loadConfig();
+  updateSubstrateButtonState();
 
   // Test surface: expose constants and the singleton runState on window so
   // an automated test harness can introspect implementation state.
@@ -1570,8 +1994,10 @@ Begin the synthesis now:`);
   window.DISPLAY = DISPLAY;
   window.TOKEN_BUDGETS = TOKEN_BUDGETS;
   window.SYNTHESIS_MAX_TOKENS = SYNTHESIS_MAX_TOKENS;
+  window.SCRUB_MAX_TOKENS = SCRUB_MAX_TOKENS;
   window.STORAGE_KEY = STORAGE_KEY;
   window.LEGACY_KEYS = LEGACY_KEYS;
+  window.ANNOTATION_TITLES = ANNOTATION_TITLES;
   window.runState = runState;
   window.EmptyResponseError = EmptyResponseError;
   window.PROVIDER_CALL = PROVIDER_CALL;

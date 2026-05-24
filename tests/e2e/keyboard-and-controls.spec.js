@@ -57,7 +57,7 @@ test.describe('keyboard shortcuts and controls', () => {
     await expect(page.locator('#verdict-anthropic-openai .verdict-score')).toHaveText('—');
 
     // Config preserved
-    const stored = await page.evaluate(() => localStorage.getItem('triangulation_v4_1_config'));
+    const stored = await page.evaluate(() => localStorage.getItem('triangulation_v5_config'));
     expect(stored).toBeTruthy();
   });
 });

@@ -57,11 +57,11 @@ npm run test:integration
 npm run test:e2e
 ```
 
-Test counts (as of the last green run):
+Test counts (as of the last green run, v5):
 
-- **127** unit tests (Vitest + JSDOM)
-- **31** integration tests (Vitest with mocked `fetch`)
-- **36** end-to-end tests (Playwright with mocked provider routes)
+- **156** unit tests (Vitest + JSDOM)
+- **37** integration tests (Vitest with mocked `fetch`)
+- **42** end-to-end tests (Playwright with mocked provider routes)
 
 The unit and integration tests run in Node against a fresh JSDOM document
 that loads `app/triangulation.html` and executes its embedded script. The
@@ -74,7 +74,24 @@ so no real API keys are required.
 See `spec/triangulation_functional_spec.md` for the functional specification
 and `spec/design.md` for the architecture and design document covering
 module layout, data model, orchestration phases, rendering pipeline,
-state machines, and security design.
+state machines, security design, and (in §17) the v5 Substrate tab
+addendum.
+
+### What v5 adds over v4.1
+
+v5 ships the Substrate Tab described in §13.2 of the spec. After the
+synthesis completes, the user pastes an authoritative passage and the
+synthesis is re-emitted with three new substrate-grounded annotations
+that replace the original peer-review tags:
+
+| Tag | Meaning | Color |
+|---|---|---|
+| `<supported>` | Source passage directly affirms the claim | green |
+| `<uncovered>` | Claim is on-topic but the passage is silent | yellow |
+| `<contradicted>` | Source passage directly refutes the claim | red |
+
+A coverage metric (`supported / total tagged`) is computed and shown
+in the metadata strip on the Substrate tab.
 
 ## Continuous integration
 
@@ -86,6 +103,6 @@ uploaded as an artifact on failure.
 
 | Field | Value |
 |---|---|
-| Application version | 4.1 |
+| Application version | 5.0 |
 | Spec version | 1.0 |
 | Document type | Released |

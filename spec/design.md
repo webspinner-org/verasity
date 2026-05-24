@@ -995,3 +995,167 @@ substrate-grounded behavior can be A/B-compared. The same prompt run
 through v4.1 and v5 should expose precisely those claims for which
 LLM peer review and substrate verification disagree — which is the
 data point the entire experimental program is collecting.
+
+---
+
+## 17. v5 Substrate Tab — Addendum
+
+This addendum documents what v5.0 adds on top of the v4.1 design
+above. v4.1 sections remain authoritative for everything they cover.
+
+### 17.1 Overview
+
+v5 implements §13.2 of the functional spec: a fourth tab through
+which the user provides an authoritative source passage and the
+synthesis is re-evaluated against it. The architectural shift is from
+*LLM-on-LLM peer review* (v4.1) to *substrate-grounded re-evaluation*
+(v5). v4.1's pipeline still runs in full; the v5 substrate step is
+strictly additive and user-triggered.
+
+### 17.2 Pipeline Shape (extended)
+
+```
+Phase 1 (3 source) → Phase 2 (6 judge) → Phase 3 (1 synthesis)
+                                                              ↘
+                                              Phase 4 (1 scrub, user-gated)
+```
+
+Phase 4 is **not** auto-triggered. It runs only when the user pastes
+a substrate and clicks the scrub button. Submitting a new prompt
+clears any prior scrub state.
+
+### 17.3 Data Model Additions
+
+```ts
+runState.synthesis: string | null;     // cached synthesis text
+runState.substrate: {
+  text:     string;                    // user-pasted authoritative passage
+  label:    string;                    // optional citation/source name
+  scrubbed: string | null;             // text emitted by the scrubber
+}
+```
+
+`STORAGE_KEY` bumps to `triangulation_v5_config`; `LEGACY_KEYS`
+prepends the prior `triangulation_v4_1_config` so existing v4.1
+users automatically migrate. Persisted-config schema is unchanged
+(same six fields).
+
+### 17.4 New Annotation Tags
+
+Three additional inline tags are recognized by the markdown renderer
+when emitted by the scrubber. They share the same color tokens that
+v4.1 already defines, so no new CSS variables were introduced.
+
+| Tag | Semantic | Color Token | Rendered Class |
+|---|---|---|---|
+| `<supported>` | Source passage directly affirms the claim | `--success` | `.supported` |
+| `<uncovered>` | Claim is on-topic but the passage is silent on it | `--warn` | `.uncovered` |
+| `<contradicted>` | Source passage directly refutes the claim | `--error` | `.contradicted` |
+
+Unmarked text in the scrub output represents the implicit fourth state
+("irrelevant or unclear") and renders in the default text color.
+
+The renderer regex is widened from
+`/<(spin|dispute)>([\s\S]*?)<\/\1>/gi` to
+`/<(spin|dispute|supported|uncovered|contradicted)>([\s\S]*?)<\/\1>/gi`.
+Tooltip titles for all five tags live in a single
+`ANNOTATION_TITLES` map.
+
+`renderScrubMarkdown(text)` is exported as an alias for clarity;
+it delegates to `renderSynthesisMarkdown`.
+
+### 17.5 The Scrubber Prompt
+
+`buildScrubPrompt(cfg, substrate)` composes a prompt with:
+
+1. The cached synthesis text (verbatim, triple-quoted).
+2. The user-pasted substrate (verbatim, triple-quoted, with an
+   optional citation label appended in parentheses).
+3. Instructions defining the three substrate-grounded annotation
+   tags and the unmarked default.
+4. Explicit instruction to REMOVE the prior `<spin>` and `<dispute>`
+   tags (which are LLM peer-review opinions, not substrate-grounded).
+5. Conservatism guidance: only use `<supported>` for direct
+   affirmation, `<contradicted>` only for direct refutation.
+6. Preserve-markdown instruction.
+7. No-meta-commentary instruction.
+
+The prompt is sent via `callAnthropic` with `SCRUB_MAX_TOKENS = 8192`,
+matching the synthesis budget.
+
+### 17.6 The Coverage Metric
+
+`computeScrubStats(scrubText)` counts each substrate tag and computes
+`coverage = supported / (supported + uncovered + contradicted)`.
+`coverage` is `null` when no substrate tags were applied at all.
+This is a deliberately simple metric — every tagged claim weighs
+equally, regardless of length or significance. Richer weighting is
+left for future work.
+
+### 17.7 Pulse Pattern Divergence from Truth Be Told
+
+The Truth Be Told pulse activates only when synthesis kicks off and
+the user is NOT on that tab. That works because synthesis is
+auto-triggered from the prompt area, where the user typically is.
+
+For Substrate, the user must be on the Substrate tab to type the
+input and click the button. Applying the v4.1 pattern unchanged would
+mean the pulse never appears (the user is always on the tab when
+scrub starts). So the Substrate pulse activates **unconditionally**
+on scrub start; `showTab('substrate')` clears it. If the user
+navigates away during the scrub, the tab strip indicator alerts them
+when the result arrives.
+
+This divergence is documented inline in `fireScrub()`.
+
+### 17.8 Button Enable Logic
+
+The scrub action button is disabled by default and enabled when **both**:
+
+1. `runState.synthesis` is non-empty (synthesis has succeeded), and
+2. The substrate textarea has non-whitespace content.
+
+`updateSubstrateButtonState()` is called from three places:
+- After successful synthesis (in `fireSynthesis`).
+- After failed synthesis (`runState.synthesis` is null).
+- On every keystroke in the substrate textarea.
+- On `clearResponses()` and `clearScrub()`.
+
+A hint string adjacent to the button explains which condition is
+unmet, so the disabled state is never silent.
+
+### 17.9 Updated File and Symbol Index
+
+| Looking for... | Locate |
+|---|---|
+| `runState.substrate` initialization | Top of script in the `runState` literal |
+| `STORAGE_KEY` value | `'triangulation_v5_config'` |
+| `LEGACY_KEYS` ordering | Includes `triangulation_v4_1_config` as the most recent fallback |
+| `SCRUB_MAX_TOKENS` | Same as `SYNTHESIS_MAX_TOKENS` (8192) |
+| New annotation classes | `.supported`, `.uncovered`, `.contradicted` in the CSS block |
+| Scrubber pipeline | `buildScrubPrompt`, `fireScrub`, `runScrub`, `clearScrub`, `computeScrubStats` |
+| 5-tag renderer | `renderSynthesisMarkdown` (regex now matches all five tags); `renderScrubMarkdown` alias |
+| Tab/pulse handlers | `showTab` extended to clear `#substrate-pulse` on tab activation |
+
+### 17.10 Limitations Carried Forward (and One New)
+
+All v4.1 limitations from §12 still apply, with one notable shift:
+
+- **L-1 (no external knowledge substrate)** is **partially** mitigated.
+  Phase 4 introduces an external substrate, but it is *user-provided*
+  rather than retrieved from a corpus, and the substrate scrubber is
+  itself an LLM call — so the architectural shift to "validate against
+  a specific external source" (§13.1) is real but incomplete. v6 would
+  replace the LLM scrubber with deterministic retrieval+citation.
+
+- **L-2 (synthesizer self-reference)** is unchanged and *extended*:
+  Anthropic is now both source #1, synthesizer, AND scrubber. The
+  conflict-of-interest property compounds across phases. A rotating
+  scrubber/synthesizer assignment is a viable v5.1 mitigation.
+
+- **New L-12: Single-substrate**. v5 supports exactly one passage per
+  scrub. Multi-document substrate routing is out of scope.
+
+- **New L-13: Coverage metric is unweighted**. Each `<supported>` tag
+  counts equally regardless of the significance or length of the
+  claim it wraps.
